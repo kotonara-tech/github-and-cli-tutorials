@@ -1,0 +1,10 @@
+# todo.sh が保存するタスクのファイル（個人のデータなのでコミットしない）
+todo.txt
+todo.txt.*
+
+# エディタや OS が作るファイル
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
