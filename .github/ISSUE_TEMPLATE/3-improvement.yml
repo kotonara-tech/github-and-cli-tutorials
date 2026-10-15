@@ -1,0 +1,26 @@
+name: 改善の提案
+description: 新しい章・演習の追加や、構成の改善などを提案する
+title: "[提案] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案の内容
+      description: 何を追加・変更したいかを書いてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: 背景・理由
+      description: なぜその改善が必要か、学習者にとってどのような効果があるかを書いてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: 具体案
+      description: 目次の案、演習の例、参考資料などがあれば書いてください。

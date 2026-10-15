@@ -1,0 +1,53 @@
+name: 教材の誤り・分かりにくい箇所
+description: 説明の誤り、動かないコマンド、出力例の違い、リンク切れ、誤字などを報告する
+title: "[教材] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        報告ありがとうございます。該当箇所と内容をできるだけ具体的に書いていただけると、修正がスムーズになります。
+
+  - type: input
+    id: location
+    attributes:
+      label: 該当箇所
+      description: ファイル名と見出し、または URL を書いてください。
+      placeholder: "例: docs/03-github-remote.md の「3.3 GitHub にリポジトリを作って push する」"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 種類
+      options:
+        - 説明の誤り
+        - コマンドが動かない・出力例と違う
+        - 説明が分かりにくい
+        - 誤字・脱字
+        - リンク切れ
+        - その他
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 内容
+      description: 何が問題か、どう直すとよいと思うかを書いてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: 実行したコマンドと出力
+      description: コマンドに関する報告の場合は、実行したコマンドと表示されたメッセージをそのまま貼り付けてください。
+      render: text
+
+  - type: input
+    id: environment
+    attributes:
+      label: 環境
+      placeholder: "例: Ubuntu 24.04 (WSL2), git version 2.43.0, gh version 2.89.0"

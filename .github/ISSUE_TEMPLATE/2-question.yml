@@ -1,0 +1,47 @@
+name: 質問
+description: 教材の内容や演習について質問する
+title: "[質問] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        分からないことは気軽に質問してください。
+        「何をしようとして」「何を実行したら」「どうなったか」を書いていただけると、回答しやすくなります。
+
+  - type: input
+    id: chapter
+    attributes:
+      label: 該当する章・演習
+      placeholder: "例: 第 4 章 演習 4-3"
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 質問の内容
+      description: 何をしようとしていて、どこで困っているかを書いてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 実行したコマンドと出力
+      description: 実行したコマンドと、表示されたメッセージをそのまま貼り付けてください（スクリーンショットよりもテキストの方が調べやすくなります）。`git status` の結果もあると助かります。
+      render: text
+
+  - type: input
+    id: environment
+    attributes:
+      label: 環境
+      placeholder: "例: macOS 15, git version 2.43.0"
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: 確認したこと
+      options:
+        - label: 第 8 章「困ったときは」に同じ症状がないか確認した
+          required: false

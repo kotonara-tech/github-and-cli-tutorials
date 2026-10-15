@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 困ったときは（よくあるトラブルと対処方法）
+    url: https://github.com/kotonara-tech/github-and-cli-tutorials/blob/main/docs/08-troubleshooting.md
+    about: Issue を作る前に、よくあるトラブルとその対処方法を確認してください。
