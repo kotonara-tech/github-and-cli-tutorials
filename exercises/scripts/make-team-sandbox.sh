@@ -19,19 +19,10 @@ set -euo pipefail
 
 TARGET="${1:-team-sandbox}"
 
-if [ -e "$TARGET" ]; then
-  echo "エラー: ${TARGET} はすでに存在します。" >&2
-  echo "       もう一度作り直すときは rm -rf ${TARGET} で削除してから実行してください。" >&2
-  exit 1
-fi
-
-# リポジトリの中にリポジトリを作ると混乱のもとになるので、作成を止める
-PARENT=$(dirname "$TARGET")
-if git -C "$PARENT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  echo "エラー: ${PARENT} は Git リポジトリの中です。" >&2
-  echo "       cd ~ などでリポジトリの外に移動してから実行してください。" >&2
-  exit 1
-fi
+# 作成先がすでにないか、Git リポジトリの中ではないかを確認する（中身は lib/common.sh）
+# shellcheck source=lib/common.sh
+source "$(dirname "$0")/lib/common.sh"
+check_sandbox_target "$TARGET"
 
 mkdir -p "$TARGET"
 cd "$TARGET"

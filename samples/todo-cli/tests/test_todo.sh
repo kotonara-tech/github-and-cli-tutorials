@@ -103,6 +103,18 @@ run_todo add
 assert_equal "add に内容がないと終了コード 1 で終わる" 1 "$STATUS"
 assert_contains "add に内容がないとエラーを表示する" "タスクの内容を指定してください" "$OUTPUT"
 
+reset_todo
+run_todo add "$(printf '1 行目\n2 行目')"
+assert_equal "add に改行を含む内容を渡すと終了コード 1 で終わる" 1 "$STATUS"
+assert_equal "add に改行を含む内容を渡してもタスクは追加されない" "" "$(cat "$TODO_FILE" 2>/dev/null)"
+
+# エディタで編集して、最後の行に改行がない状態を再現する
+reset_todo
+printf '[ ] 牛乳を買う\n[ ] 部屋を掃除する' >"$TODO_FILE"
+run_todo add "本を読む"
+expected=$(printf '[ ] 牛乳を買う\n[ ] 部屋を掃除する\n[ ] 本を読む')
+assert_equal "add は最後の行に改行がないファイルにも正しく追加する" "$expected" "$(cat "$TODO_FILE")"
+
 # ---------------------------------------------------------------------------
 # list
 # ---------------------------------------------------------------------------
@@ -151,6 +163,25 @@ assert_equal "done に番号がないと終了コード 1 で終わる" 1 "$STAT
 reset_todo
 run_todo "done" 1
 assert_equal "タスクがないときの done は終了コード 1 で終わる" 1 "$STATUS"
+
+# エディタで編集して、最後の行に改行がない状態を再現する
+reset_todo
+printf '[ ] 牛乳を買う\n[ ] 部屋を掃除する' >"$TODO_FILE"
+run_todo "done" 2
+assert_equal "done は最後の行に改行がないファイルの最後のタスクも完了にできる" "完了にしました: 部屋を掃除する" "$OUTPUT"
+
+reset_todo
+printf 'メモ\n' >"$TODO_FILE"
+run_todo "done" 1
+assert_equal "done はタスクの形式でない行に対しては終了コード 1 で終わる" 1 "$STATUS"
+assert_equal "done はタスクの形式でない行を変更しない" "メモ" "$(cat "$TODO_FILE")"
+
+reset_todo
+run_todo add "牛乳を買う"
+chmod 644 "$TODO_FILE"
+run_todo "done" 1
+assert_equal "done はファイルの権限を変えない" "$TODO_FILE" "$(find "$TODO_FILE" -perm 644)"
+assert_equal "done は一時ファイルを残さない" "todo.txt" "$(ls "$WORK_DIR")"
 
 # ---------------------------------------------------------------------------
 # 結果

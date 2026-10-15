@@ -49,7 +49,9 @@ check() {
 
 cd "$WORK_DIR" || exit 1
 check "conflict: 作成に成功する" bash "${SCRIPTS_DIR}/make-conflict-sandbox.sh"
-check "conflict: main と feature/update-hobby ブランチがある" \
+check "conflict: main ブランチがある" \
+  git -C conflict-sandbox rev-parse --verify --quiet main
+check "conflict: feature/update-hobby ブランチがある" \
   git -C conflict-sandbox rev-parse --verify --quiet feature/update-hobby
 check "conflict: main ブランチにいる" \
   test "$(git -C conflict-sandbox branch --show-current)" = "main"
@@ -73,12 +75,28 @@ check "conflict: Git リポジトリの中では作成しない" \
     echo $?
   )" = "1"
 
+check "conflict: 親ディレクトリがまだなくても、Git リポジトリの中では作成しない" \
+  test "$(
+    bash "${SCRIPTS_DIR}/make-conflict-sandbox.sh" conflict-sandbox/newdir/nested >/dev/null 2>&1
+    echo $?
+  )" = "1"
+check "conflict: 作成を止めたときは親ディレクトリも作らない" \
+  test ! -e conflict-sandbox/newdir
+
+check "conflict: 親ディレクトリがまだなくても、リポジトリの外なら作成できる" \
+  bash "${SCRIPTS_DIR}/make-conflict-sandbox.sh" newdir/conflict-sandbox
+
 # ---------------------------------------------------------------------------
 # make-team-sandbox.sh
 # ---------------------------------------------------------------------------
 
 cd "$WORK_DIR" || exit 1
 check "team: 作成に成功する" bash "${SCRIPTS_DIR}/make-team-sandbox.sh"
+check "team: Git リポジトリの中では作成しない" \
+  test "$(
+    bash "${SCRIPTS_DIR}/make-team-sandbox.sh" team-sandbox/alice/newdir/nested >/dev/null 2>&1
+    echo $?
+  )" = "1"
 check "team: alice と bob が同じコミットを持っている" \
   test "$(git -C team-sandbox/alice rev-parse HEAD)" = "$(git -C team-sandbox/bob rev-parse HEAD)"
 

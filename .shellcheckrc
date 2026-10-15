@@ -1,0 +1,3 @@
+# source で読み込むファイルを、読み込む側のスクリプトがあるディレクトリから探す
+source-path=SCRIPTDIR
+external-sources=true

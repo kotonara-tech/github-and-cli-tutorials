@@ -124,7 +124,7 @@ done
 <details>
 <summary>実装の例</summary>
 
-`todo.sh` の `main()` 関数の直前に、次の関数を追加します。番号のチェックは `cmd_done` と同じです。
+`todo.sh` の `main()` 関数の直前に、次の関数を追加します。番号のチェックは `cmd_done` と同じで、件数を数える `count_tasks` と、ファイルを書き換える `rewrite_tasks` も `cmd_done` と同じものを使います。
 
 ```bash
 # 指定した番号のタスクを削除する
@@ -137,10 +137,8 @@ cmd_delete() {
   esac
   local num=$((10#$1))
 
-  local total=0
-  if [ -f "$TODO_FILE" ]; then
-    total=$(wc -l <"$TODO_FILE" | tr -d ' ')
-  fi
+  local total
+  total=$(count_tasks)
   if [ "$num" -lt 1 ] || [ "$num" -gt "$total" ]; then
     die "${num} 番のタスクはありません（todo.sh list で番号を確認してください）"
   fi
@@ -148,15 +146,13 @@ cmd_delete() {
   local line
   line=$(sed -n "${num}p" "$TODO_FILE")
 
-  local tmp
-  tmp=$(mktemp "${TODO_FILE}.XXXXXX")
-  awk -v n="$num" 'NR != n' "$TODO_FILE" >"$tmp"
-  mv "$tmp" "$TODO_FILE"
+  # n 行目以外の行だけを残す（= n 行目を削除する）
+  rewrite_tasks -v n="$num" 'NR != n'
   echo "削除しました: ${line#\[?\] }"
 }
 ```
 
-- `awk -v n="$num" 'NR != n'` は「行番号（`NR`）が `n` ではない行だけを出力する」、つまり `n` 行目を取り除く処理です。
+- `rewrite_tasks -v n="$num" 'NR != n'` は、awk で「行番号（`NR`）が `n` ではない行だけを残す」、つまり `n` 行目を取り除く処理です。
 - `${line#\[?\] }` は、行の先頭の `[ ]` または `[x]` と、その後ろの空白を取り除いた文字列です（`?` は任意の 1 文字）。
 
 `main()` の `case` 文と、`usage()` のヘルプにも追加します。

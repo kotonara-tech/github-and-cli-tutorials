@@ -228,7 +228,7 @@ gh pr --help       # GitHub CLI のヘルプ
 $ ls -l samples/todo-cli
 -rw-r--r-- 1 hanako hanako 3392 Apr  1 10:00 README.md
 drwxr-xr-x 2 hanako hanako 4096 Apr  1 10:00 tests
--rwxr-xr-x 1 hanako hanako 3757 Apr  1 10:00 todo.sh
+-rwxr-xr-x 1 hanako hanako 5028 Apr  1 10:00 todo.sh
 ```
 
 ```text

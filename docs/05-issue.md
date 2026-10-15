@@ -56,7 +56,7 @@ gh browse
 
 - **Code** タブ: ファイルと `README.md` が表示されている
 - **Actions** タブ: `test` というワークフローが実行され、緑色のチェックマーク（成功）が付いている
-  - `.github/workflows/test.yml` の設定により、push するたびにテストが自動で実行されます（[第 6 章](06-pull-request.md) で詳しく説明します）
+  - `.github/workflows/test.yml` の設定により、`main` ブランチに push したときと、Pull Request を作成・更新したときに、テストが自動で実行されます（[第 6 章](06-pull-request.md) で詳しく説明します）
 - **Issues** タブ: 「**New issue**」をクリックすると、「バグ報告」「機能リクエスト」のテンプレートが選べる
 
 > [!NOTE]

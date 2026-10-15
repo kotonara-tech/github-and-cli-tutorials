@@ -46,13 +46,48 @@ die() {
   exit 1
 }
 
+# タスクの件数を数える
+# （wc -l は改行の数を数えるため、最後の行に改行がないと 1 件少なくなる。awk なら正しく数えられる）
+count_tasks() {
+  if [ -f "$TODO_FILE" ]; then
+    awk 'END { print NR }' "$TODO_FILE"
+  else
+    echo 0
+  fi
+}
+
+# awk でタスクのファイルを書き換える
+#   rewrite_tasks <awk に渡す引数...>
+# 一時ファイルに書き出してから中身を書き戻すので、awk が途中で失敗しても元のファイルは壊れず、
+# ファイルの権限もそのまま保たれる
+rewrite_tasks() {
+  local tmp
+  tmp=$(mktemp "${TODO_FILE}.XXXXXX")
+  if ! awk "$@" "$TODO_FILE" >"$tmp"; then
+    rm -f "$tmp"
+    die "タスクのファイルを書き換えられませんでした: ${TODO_FILE}"
+  fi
+  cat "$tmp" >"$TODO_FILE"
+  rm -f "$tmp"
+}
+
 # タスクを追加する
 cmd_add() {
   if [ $# -eq 0 ]; then
     die "追加するタスクの内容を指定してください（例: todo.sh add \"牛乳を買う\"）"
   fi
-  printf '[ ] %s\n' "$*" >>"$TODO_FILE"
-  echo "追加しました: $*"
+  local text="$*"
+  # 改行を含む内容は「1 行 1 タスク」の形式が崩れるので受け付けない
+  case "$text" in
+    *$'\n'*) die "タスクの内容に改行は含められません" ;;
+  esac
+  # エディタで編集したなどで、ファイルの最後が改行で終わっていない場合は、
+  # 新しいタスクが前の行につながらないように改行を補う
+  if [ -s "$TODO_FILE" ] && [ -n "$(tail -c 1 "$TODO_FILE")" ]; then
+    echo >>"$TODO_FILE"
+  fi
+  printf '[ ] %s\n' "$text" >>"$TODO_FILE"
+  echo "追加しました: $text"
 }
 
 # タスクを番号付きで一覧表示する
@@ -79,10 +114,8 @@ cmd_done() {
   # 先頭の 0 を取り除いて 10 進数として扱う（例: 01 → 1）
   local num=$((10#$1))
 
-  local total=0
-  if [ -f "$TODO_FILE" ]; then
-    total=$(wc -l <"$TODO_FILE" | tr -d ' ')
-  fi
+  local total
+  total=$(count_tasks)
   if [ "$num" -lt 1 ] || [ "$num" -gt "$total" ]; then
     die "${num} 番のタスクはありません（todo.sh list で番号を確認してください）"
   fi
@@ -90,17 +123,16 @@ cmd_done() {
   local line
   line=$(sed -n "${num}p" "$TODO_FILE")
   case "$line" in
+    '[ ] '*) ;;
     '[x] '*)
       echo "すでに完了しています: ${line#\[x\] }"
       return 0
       ;;
+    *) die "${num} 番の行がタスクの形式（[ ] または [x] で始まる）になっていません: ${line}" ;;
   esac
 
-  # 一時ファイルに書き出してから置き換える（途中で失敗しても元のファイルが壊れない）
-  local tmp
-  tmp=$(mktemp "${TODO_FILE}.XXXXXX")
-  awk -v n="$num" 'NR == n { sub(/^\[ \]/, "[x]") } { print }' "$TODO_FILE" >"$tmp"
-  mv "$tmp" "$TODO_FILE"
+  # n 行目の先頭の [ ] を [x] に置き換える
+  rewrite_tasks -v n="$num" 'NR == n { sub(/^\[ \]/, "[x]") } { print }'
   echo "完了にしました: ${line#\[ \] }"
 }
 
