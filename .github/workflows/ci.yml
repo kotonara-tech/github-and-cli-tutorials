@@ -1,0 +1,38 @@
+# 教材のチェックを自動で実行する設定です。
+# Pull Request を作ったときと、main に push したときに実行されます。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  markdown:
+    name: Markdown の書式チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリのコードを取得する
+        uses: actions/checkout@v5
+
+      - name: markdownlint を実行する
+        run: npx --yes markdownlint-cli2@0.18.1
+
+  shell:
+    name: シェルスクリプトのチェックとテスト
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリのコードを取得する
+        uses: actions/checkout@v5
+
+      - name: shellcheck を実行する
+        run: git ls-files -z '*.sh' | xargs -0 shellcheck
+
+      - name: todo-cli のテストを実行する
+        run: bash samples/todo-cli/tests/test_todo.sh
+
+      - name: 練習用スクリプトのテストを実行する
+        run: bash exercises/scripts/tests/test_sandboxes.sh

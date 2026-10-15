@@ -1,0 +1,25 @@
+// markdownlint-cli2 の設定
+// ルールの説明: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+{
+  "config": {
+    "default": true,
+    // 日本語の文章は 1 行が長くなりやすいため、行の長さは制限しない
+    "MD013": false,
+    // 解答例の折りたたみ（details）やキー表記（kbd）などの HTML を許可する
+    "MD033": {
+      "allowed_elements": ["details", "summary", "kbd", "br"]
+    },
+    // 同じ見出し名は、同じ階層に並ばなければ許可する（各章の「演習」「まとめ」など）
+    "MD024": {
+      "siblings_only": true
+    },
+    // Pull Request / Issue のテンプレートは見出し 2 から始まるため、先頭の見出し 1 を必須にしない
+    "MD041": false,
+    // git status の出力などに含まれるタブ文字は、コードブロックの中では許可する
+    "MD010": {
+      "code_blocks": false
+    }
+  },
+  "globs": ["**/*.md"],
+  "ignores": ["**/node_modules/**"]
+}
