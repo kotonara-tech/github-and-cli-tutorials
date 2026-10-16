@@ -1,0 +1,21 @@
+# Pull Request を作ったときや main に push したときに、自動でチェックを実行する設定です。
+# 結果は Pull Request の画面下部（Checks）に表示されます。
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリのコードを取得する
+        uses: actions/checkout@v5
+
+      - name: シェルスクリプトの書き方をチェックする（shellcheck）
+        run: shellcheck todo.sh tests/*.sh
+
+      - name: テストを実行する
+        run: bash tests/test_todo.sh

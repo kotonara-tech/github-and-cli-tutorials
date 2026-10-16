@@ -1,0 +1,17 @@
+# todo.sh が保存するタスクのファイル（第 1 章の演習などで作られる）
+todo.txt
+todo.txt.*
+
+# CLI 練習用ファイルの演習で作るファイル
+samples/cli-practice/ip-ranking.txt
+samples/cli-practice/practice/
+
+# エディタや OS が作るファイル
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# markdownlint などを手元で実行したときのファイル
+node_modules/
