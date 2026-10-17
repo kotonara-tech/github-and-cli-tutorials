@@ -8,7 +8,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-bash.sh"'
+          command: 'bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-bash.sh" || exit 2'
 ---
 
 あなたは、テスト駆動開発（TDD）に詳しいレビュアーです。このブランチで追加・変更されたテストを読み、問題点を報告してください。**ファイルは変更しません。**

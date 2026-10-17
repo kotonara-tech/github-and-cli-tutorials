@@ -119,10 +119,11 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: 'bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-bash.sh"'
+          command: 'bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-bash.sh" || exit 2'
 ```
 
 [readonly-bash.sh](../../samples/claude-harness/template/.claude/hooks/readonly-bash.sh) は、`git diff` / `git log` / `git show` / `git status` 以外のコマンドを、終了コード 2 で止めます。レビューするテストのファイルの中身がそのまま実行されてしまうので、テストの実行（`bash tests/test_todo.sh`）も止めます。止められたコマンドは実行されず、理由が subagent に伝わります。
+最後の `|| exit 2` は、「スクリプトが見つからないなどで、フックそのものが失敗したときも止める」という意味です。フックが 0 と 2 以外の終了コード（スクリプトが見つからないときは 127）で終わると、Claude Code はエラーを表示するだけで、コマンドを実行してしまうためです。
 「危ないコマンドを探して止める」のではなく、「安全だと分かっている書き方だけを通す」（**許可リスト**）考え方で作っています。引用符や `$` などの記号を使うと、同じコマンドをいくらでも違う書き方にできるので、使える文字、オプション、パスを決めて、それ以外はすべて止めます。
 
 > [!NOTE]

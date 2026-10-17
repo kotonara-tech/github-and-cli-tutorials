@@ -164,7 +164,8 @@ assert_contains "jq がないときはその旨を表示する" "jq が見つか
 # ---------------------------------------------------------------------------
 
 for command in "git diff main...HEAD -- tests/" "git diff --stat main...HEAD" "git log --oneline -5" \
-  "git log -n3 --oneline -- tests/test_todo.sh" "git show HEAD" "git show HEAD~1 --stat" "git status" "git status --short"; do
+  "git log -n3 --oneline -- tests/test_todo.sh" "git show HEAD" "git show HEAD~1 --stat" "git status" "git status --short" \
+  "git diff -- tests/.." "git diff main...HEAD -- docs/.environment.md" "git log -- app.env.example"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal "読み取りだけのコマンドは実行してよい: ${command}" 0 "$STATUS"
 done
@@ -197,7 +198,8 @@ for command in "git diff /dev/null /etc/hostname" "git diff -- ../outside.txt" "
 done
 
 # 秘密の情報を書くファイル（.env など）
-for command in "git show HEAD:.env" "git log -p -- .env" "git show HEAD:.env.local" "git diff HEAD~1 -- config/.env.production"; do
+for command in "git show HEAD:.env" "git log -p -- .env" "git show HEAD:.env.local" "git show HEAD:config/.env" \
+  "git diff HEAD~1 -- config/.env.production"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal ".env を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
 done
@@ -217,6 +219,21 @@ assert_equal "command が取り出せないときは止める（終了コード 
 JQ="${WORK_DIR}/no-such-jq" run_hook "$READONLY_HOOK" "$(bash_json "git status")"
 assert_equal "jq がないときは、安全のために止める（終了コード 2）" 2 "$STATUS"
 assert_contains "jq がないときはその旨を表示する" "jq が見つからない" "$ERR"
+
+# test-reviewer.md に書いたフックのコマンドそのものを、Claude Code と同じようにシェルで実行する
+REVIEWER_MD="${SCRIPT_DIR}/../template/.claude/agents/test-reviewer.md"
+REVIEWER_HOOK_COMMAND=$(sed -n "s/^ *command: '\(.*\)'\$/\1/p" "$REVIEWER_MD")
+run_reviewer_hook() {
+  ERR=$(printf '%s' "$2" | CLAUDE_PROJECT_DIR="$1" sh -c "$REVIEWER_HOOK_COMMAND" 2>&1 >/dev/null)
+  STATUS=$?
+}
+run_reviewer_hook "${SCRIPT_DIR}/../template" "$(bash_json "git status")"
+assert_equal "test-reviewer.md のフック: 読み取りだけのコマンドは実行してよい" 0 "$STATUS"
+run_reviewer_hook "${SCRIPT_DIR}/../template" "$(bash_json "rm -rf tests")"
+assert_equal "test-reviewer.md のフック: それ以外のコマンドは止める" 2 "$STATUS"
+mkdir -p "${WORK_DIR}/project-without-hooks"
+run_reviewer_hook "${WORK_DIR}/project-without-hooks" "$(bash_json "git status")"
+assert_equal "test-reviewer.md のフック: スクリプトが見つからないときも、安全のために止める（終了コード 2）" 2 "$STATUS"
 
 # ---------------------------------------------------------------------------
 # 結果

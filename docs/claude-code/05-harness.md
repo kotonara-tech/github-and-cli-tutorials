@@ -105,8 +105,8 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
       "Bash(git push -f*)",
       "Bash(git push * -f*)",
       "Bash(git push * +*)",
-      "Read(./.env)",
-      "Read(./.env.*)"
+      "Read(**/.env)",
+      "Read(**/.env.*)"
     ]
   }
 }
@@ -121,6 +121,8 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
 - `Bash(git add *)` の `*` は「何が続いてもよい」という意味です。`Bash(git add *)` は `git add todo.sh` にも `git add`（引数なし）にも当てはまります。
 - `*` は途中にも書けます。`Bash(git push *--force*)` は、`git push --force` にも `git push origin main --force-with-lease` にも当てはまります。
 - ただし、コマンドの引数の書き方はいくらでも変えられるので、このようなルールで **すべての書き方を確実に防ぐことはできません**（公式ドキュメントにも明記されています）。例えば `git push -uf`（`-u` と `-f` をまとめた書き方）は、この `deny` では防げません。この設定では、`git push` はすべて `ask` で確認されるので、確認のときに内容を必ず読みます。`main` ブランチへの強制 push を確実に防ぐには、GitHub の **ブランチの保護**（[本編の第 7 章](../07-github-flow.md#ブランチを保護する任意)）を組み合わせます。
+- `Read(**/.env)` の `**/` は「どの階層のフォルダーでも」という意味です。リポジトリのルートの `.env` だけでなく、`config/.env` なども拒否します。
+- `Read` の `deny` は、Claude Code のファイルを読むツールと、Bash の `cat` や `head` のようにファイル名を指定して読むコマンドに効きます。ただし、`grep -r` のようにファイル名を指定せずに読むコマンドや、スクリプトが自分でファイルを開く場合には効きません（[公式ドキュメント: 権限](https://code.claude.com/docs/ja/permissions)）。OS の機能で確実に防ぐには、**サンドボックス**（`/sandbox`、[公式ドキュメント](https://code.claude.com/docs/ja/sandboxing)）を使います。秘密の情報は、そもそも練習用リポジトリに置かないのがいちばん安全です。
 - `git status`、`git diff`、`git log` などの読み取りだけのコマンドは、最初から確認なしで実行されます。
 - `$schema` の行があると、VS Code がこのファイルの書き方をチェックし、入力の候補を表示してくれます。
 - `/permissions` で、今効いているルールを確認・追加・削除できます。

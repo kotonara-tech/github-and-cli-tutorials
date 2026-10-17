@@ -18,6 +18,6 @@ samples/cli-practice/practice/
 # markdownlint などを手元で実行したときのファイル
 node_modules/
 
-# Claude Code の、自分だけの設定とメモ（発展編）
-.claude/settings.local.json
+# Claude Code の、自分だけの設定とメモ（発展編。サブディレクトリで起動したときに作られるものも含む）
+**/.claude/settings.local.json
 CLAUDE.local.md
