@@ -36,3 +36,16 @@ jobs:
 
       - name: 練習用スクリプトのテストを実行する
         run: bash exercises/scripts/tests/test_sandboxes.sh
+
+      - name: Claude Code のフックのテストを実行する
+        run: bash samples/claude-harness/tests/test_hooks.sh
+
+  json:
+    name: JSON の書式チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリのコードを取得する
+        uses: actions/checkout@v5
+
+      - name: JSON ファイル（VS Code と Claude Code の設定）を検証する
+        run: git ls-files -z '*.json' | xargs -0 -r -n 1 python3 -m json.tool >/dev/null
