@@ -165,7 +165,7 @@ assert_contains "jq がないときはその旨を表示する" "jq が見つか
 
 for command in "git diff main...HEAD -- tests/" "git diff --stat main...HEAD" "git log --oneline -5" \
   "git log -n3 --oneline -- tests/test_todo.sh" "git show HEAD" "git show HEAD~1 --stat" "git status" "git status --short" \
-  "git diff -- tests/.." "git diff main...HEAD -- docs/.environment.md" "git log -- app.env.example"; do
+  "git log --oneline origin/main..HEAD" "git diff main...HEAD -- docs/.environment.md" "git log -- app.env.example"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal "読み取りだけのコマンドは実行してよい: ${command}" 0 "$STATUS"
 done
@@ -192,7 +192,8 @@ for command in "git diff --out''put=todo.sh HEAD~1" "git diff --ext''-diff" "git
 done
 
 # リポジトリの外を指すパス（git diff は、外のパスを渡すと自動で --no-index と同じ動きになる）
-for command in "git diff /dev/null /etc/hostname" "git diff -- ../outside.txt" "git show HEAD -- ~/.ssh/id_rsa" "git diff -- tests/../../x"; do
+for command in "git diff /dev/null /etc/hostname" "git diff -- ../outside.txt" "git show HEAD -- ~/.ssh/id_rsa" "git diff -- tests/../../x" \
+  "git diff ./.. ." "git diff .//.. ." "git diff -- tests/.." "git show HEAD:.."; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal "リポジトリの外を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
 done
