@@ -67,11 +67,15 @@ git commit -q -am "趣味を読書に変更"
 cat <<EOF
 コンフリクト練習用のリポジトリを作成しました: $(pwd)
 
-次のコマンドで、ブランチの状態を確認してからマージしてみましょう。
+まず、VS Code で開きます。
 
-  cd $(pwd)
+  code $(pwd)
+
+開いた VS Code の統合ターミナルで、ブランチの状態を確認してからマージしてみましょう。
+
   git log --oneline --graph --all
   git merge feature/update-hobby
 
+（ターミナルだけで進める場合は、先に cd $(pwd) で移動してください）
 コンフリクトの解消方法は docs/04-branch.md を参照してください。
 EOF

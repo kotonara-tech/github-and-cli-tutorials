@@ -62,12 +62,18 @@ cat <<EOF
   alice/      : Alice さんの作業用リポジトリ
   bob/        : Bob さんの作業用リポジトリ
 
-練習の例:
-  1. cd $(pwd)/alice で README.md の「今週の目標」を編集して commit し、git push する
-  2. cd $(pwd)/bob で README.md の同じ行を別の内容に編集して commit し、git push する
-     → 先に Alice さんが push しているため拒否されます
-  3. bob/ で git pull してコンフリクトを解消し、もう一度 git push する
-  4. alice/ で git pull して、Bob さんの変更を取り込む
+Alice さんと Bob さんの作業用リポジトリを、それぞれ別の VS Code のウィンドウで開きます。
 
+  code $(pwd)/alice
+  code $(pwd)/bob
+
+練習の例:
+  1. alice のウィンドウで README.md の「今週の目標」を編集して commit し、push する
+  2. bob のウィンドウで README.md の同じ行を別の内容に編集して commit し、push する
+     → 先に Alice さんが push しているため拒否されます
+  3. bob のウィンドウで pull してコンフリクトを解消し、もう一度 push する
+  4. alice のウィンドウで pull して、Bob さんの変更を取り込む
+
+（ターミナルだけで進める場合は、cd $(pwd)/alice と cd $(pwd)/bob で行き来します）
 詳しい手順は exercises/README.md を参照してください。
 EOF

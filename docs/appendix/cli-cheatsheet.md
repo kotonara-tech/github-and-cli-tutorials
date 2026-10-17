@@ -100,10 +100,29 @@
 
 ## エディタ
 
+この教材では、ファイルの編集に **VS Code** を使います（[第 0 章](../00-setup.md#07-vs-code-をインストールする)）。
+nano と vim は、ターミナルしか使えない場面（サーバーに接続したときなど）のために、保存と終了の方法だけ覚えておくと安心です。
+
 | エディタ | 保存 | 終了 |
 | --- | --- | --- |
+| VS Code | <kbd>Ctrl</kbd> + <kbd>S</kbd>（macOS は <kbd>Command</kbd> + <kbd>S</kbd>） | タブを閉じる: <kbd>Ctrl</kbd> + <kbd>W</kbd>（macOS は <kbd>Command</kbd> + <kbd>W</kbd>） |
 | nano | <kbd>Ctrl</kbd> + <kbd>O</kbd> → <kbd>Enter</kbd> | <kbd>Ctrl</kbd> + <kbd>X</kbd> |
 | vim | <kbd>Esc</kbd> → `:w` | <kbd>Esc</kbd> → `:q`（保存せずに終了は `:q!`、保存して終了は `:wq`） |
+
+### code コマンド
+
+ターミナルから VS Code を操作するコマンドです（[公式ドキュメント: Command Line Interface](https://code.visualstudio.com/docs/configure/command-line)）。
+
+| コマンド | 意味 |
+| --- | --- |
+| `code .` | 今いるディレクトリを VS Code で開く |
+| `code <dir>` | ディレクトリを VS Code で開く（新しいウィンドウで開く） |
+| `code <file>` | ファイルを VS Code で開く（ファイルがなければ、保存したときに作られる） |
+| `code --diff <file1> <file2>` | 2 つのファイルの違いを、VS Code の差分エディターで表示する |
+| `code --wait <file>` | ファイルを開き、タブを閉じるまで待つ（Git や `gh` のエディタの設定に使う） |
+| `code --install-extension <ID>` | 拡張機能をインストールする |
+| `code --list-extensions` | インストールされている拡張機能の一覧を表示する |
+| `code --version` | VS Code のバージョンを表示する |
 
 ---
 
