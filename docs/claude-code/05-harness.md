@@ -82,6 +82,7 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
 | `<リポジトリ>/.claude/settings.local.json` | 自分の、そのリポジトリだけ。確認で「Yes, and don't ask again」を選ぶとここに保存される | コミットしない（`.gitignore` に追加する） |
 
 同じ項目が複数のファイルにあるときは、範囲の狭いもの（local → リポジトリ → 自分のすべてのプロジェクト）が優先されます。
+ただし、`allow` / `ask` / `deny` のようなリストは、どれか 1 つのファイルのものを選ぶのではなく、**すべてのファイルの内容を合わせて** 使います。どれか 1 つのファイルの `deny` に当てはまるコマンドは、ほかのファイルの `allow` に書いても拒否されます（[公式ドキュメント: 設定](https://code.claude.com/docs/ja/settings)）。
 
 完成例の `.claude/settings.json` の権限の部分です。
 
