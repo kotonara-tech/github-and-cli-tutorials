@@ -169,6 +169,19 @@ JQ="${WORK_DIR}/no-such-jq" run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/bad.
 assert_equal "jq がないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
 assert_contains "jq がないときはその旨を表示する" "jq が見つからない" "$ERR"
 
+# settings.json に書いたフックのコマンドそのものを、Claude Code と同じようにシェルで実行する
+# （スクリプトのパスを書き間違えると、フックが動かなくなるため）
+SETTINGS_JSON="${SCRIPT_DIR}/../template/.claude/settings.json"
+EDIT_HOOK_COMMAND=$(jq -r '.hooks.PostToolUse[0].hooks[0].command' "$SETTINGS_JSON")
+run_settings_hook() {
+  ERR=$(printf '%s' "$1" | CLAUDE_PROJECT_DIR="${SCRIPT_DIR}/../template" sh -c "$EDIT_HOOK_COMMAND" 2>&1 >/dev/null)
+  STATUS=$?
+}
+run_settings_hook "$(edit_json "${WORK_DIR}/bad.sh")"
+assert_equal "settings.json のフック: 警告のあるスクリプトは終了コード 2 で終わる" 2 "$STATUS"
+run_settings_hook "$(edit_json "${WORK_DIR}/good.sh")"
+assert_equal "settings.json のフック: 警告のないスクリプトは終了コード 0 で終わる" 0 "$STATUS"
+
 # ---------------------------------------------------------------------------
 # readonly-bash.sh: 決まった形の読み取りだけのコマンドは実行してよい
 # ---------------------------------------------------------------------------
