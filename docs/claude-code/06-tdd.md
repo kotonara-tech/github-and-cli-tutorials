@@ -152,6 +152,7 @@ $ ./todo.sh stats extra
    ```
 
 5. VS Code の統合ターミナルで `claude` を起動し、**Manual モード**（`⏸ manual mode on`）であることを確認します。
+   この章の `bash` のコマンド（`git add`、`git commit` など）は、メニューの **ターミナル** > **新しいターミナル** で開いた別のターミナルで実行します（[第 1 章](01-setup.md#a14-初めて起動する)）。
 
 > [!TIP]
 > VS Code の画面を、左にエディター（`todo.sh` と `tests/test_todo.sh`）、右に `TODO.md` の Markdown プレビュー、下に統合ターミナル（Claude Code）と並べると、サイクルの進み具合が見やすくなります。
