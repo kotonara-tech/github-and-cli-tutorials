@@ -126,9 +126,13 @@ assert_contains "警告のあるスクリプトは shellcheck の警告番号を
 run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/a b\\c.sh")"
 assert_equal "空白や \\ を含むパス（JSON のエスケープ）も正しく読み取る" 2 "$STATUS"
 
-# 項目が 2 つあるときは、最初の file_path（tool_input の中のもの）を使う
-run_hook "$EDIT_HOOK" "$(printf '{"tool_input":{"file_path":"%s"},"other":{"file_path":"%s"}}' "${WORK_DIR}/bad.sh" "${WORK_DIR}/good.sh")"
-assert_equal "file_path が 2 つあるときは最初のものをチェックする" 2 "$STATUS"
+# tool_input の外にも file_path があるときは、tool_input の中のものを使う
+run_hook "$EDIT_HOOK" "$(printf '{"file_path":"%s","tool_input":{"file_path":"%s"},"other":{"file_path":"%s"}}' "${WORK_DIR}/good.sh" "${WORK_DIR}/bad.sh" "${WORK_DIR}/good.sh")"
+assert_equal "tool_input の外の file_path は使わず、tool_input の中のものをチェックする" 2 "$STATUS"
+
+# 複数行に整形された JSON でも読み取れる
+run_hook "$EDIT_HOOK" "$(printf '{\n  "tool_name": "Edit",\n  "tool_input": {\n    "file_path": "%s"\n  }\n}' "${WORK_DIR}/bad.sh")"
+assert_equal "複数行に整形された JSON でも file_path を読み取る" 2 "$STATUS"
 
 # 書き込む内容（content）の中のエスケープされた "file_path" は、項目として扱わない
 run_hook "$EDIT_HOOK" "$(printf '{"tool_name":"Write","tool_input":{"content":"echo \\"file_path\\": \\"%s\\"","file_path":"%s"}}' "${WORK_DIR}/good.sh" "${WORK_DIR}/bad.sh")"
@@ -154,8 +158,7 @@ assert_contains "lib/json.sh がないときはその旨を表示する" "lib/js
 # ---------------------------------------------------------------------------
 
 for command in "git diff main...HEAD -- tests/" "git diff --stat main...HEAD" "git log --oneline -5" \
-  "git log -n3 --oneline -- tests/test_todo.sh" "git show HEAD" "git show HEAD~1 --stat" "git status" "git status --short" \
-  "bash tests/test_todo.sh"; do
+  "git log -n3 --oneline -- tests/test_todo.sh" "git show HEAD" "git show HEAD~1 --stat" "git status" "git status --short"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal "読み取りだけのコマンドは実行してよい: ${command}" 0 "$STATUS"
 done
@@ -166,6 +169,7 @@ done
 
 # 読み取り以外のコマンドと、複数のコマンドをつなぐ書き方
 for command in "git commit -m x" "git checkout -- tests/" "sed -i s/a/b/ todo.sh" "rm -rf tests" "git" "gitdiff" \
+  "bash tests/test_todo.sh" \
   "git diff > out.txt" "git diff; rm -rf tests" "git diff && rm -rf tests" "git log | tee out.txt" \
   "git log \$(touch x)" "git log \`touch x\`" "git log -1"$'\n'"rm -rf tests"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
@@ -186,6 +190,16 @@ for command in "git diff /dev/null /etc/hostname" "git diff -- ../outside.txt" "
   assert_equal "リポジトリの外を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
 done
 
+# 秘密の情報を書くファイル（.env）
+for command in "git show HEAD:.env" "git log -p -- .env" "git diff HEAD~1 -- config/.env.local"; do
+  run_hook "$READONLY_HOOK" "$(bash_json "$command")"
+  assert_equal ".env を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
+done
+
+# tool_input の外にある同じ名前の項目は使わない（Claude Code が項目を増やしたり、順番を変えたりしても安全なように）
+run_hook "$READONLY_HOOK" '{"command":"git status","tool_name":"Bash","tool_input":{"command":"rm -rf tests"}}'
+assert_equal "tool_input の外の command は使わない" 2 "$STATUS"
+
 run_hook "$READONLY_HOOK" "$(bash_json "git commit -m x")"
 assert_contains "止めたときは理由を Claude に伝える" "test-reviewer が実行できるのは" "$ERR"
 
@@ -194,9 +208,6 @@ assert_equal "command が取り出せないときは止める（終了コード 
 
 run_hook "${WORK_DIR}/hooks-without-lib/readonly-bash.sh" "$(bash_json "git status")"
 assert_equal "lib/json.sh がないときは、安全のために止める（終了コード 2）" 2 "$STATUS"
-
-run_hook "$READONLY_HOOK" "$(bash_json "git commit -m x")"
-assert_contains "止めたときは理由を Claude に伝える" "test-reviewer が実行できるのは" "$ERR"
 
 # ---------------------------------------------------------------------------
 # 結果

@@ -122,7 +122,7 @@ hooks:
           command: 'bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-bash.sh"'
 ```
 
-[readonly-bash.sh](../../samples/claude-harness/template/.claude/hooks/readonly-bash.sh) は、`git diff` / `git log` / `git show` / `git status` と `bash tests/test_todo.sh` 以外のコマンドを、終了コード 2 で止めます。止められたコマンドは実行されず、理由が subagent に伝わります。
+[readonly-bash.sh](../../samples/claude-harness/template/.claude/hooks/readonly-bash.sh) は、`git diff` / `git log` / `git show` / `git status` 以外のコマンドを、終了コード 2 で止めます。レビューするテストのファイルの中身がそのまま実行されてしまうので、テストの実行（`bash tests/test_todo.sh`）も止めます。止められたコマンドは実行されず、理由が subagent に伝わります。
 「危ないコマンドを探して止める」のではなく、「安全だと分かっている書き方だけを通す」（**許可リスト**）考え方で作っています。引用符や `$` などの記号を使うと、同じコマンドをいくらでも違う書き方にできるので、使える文字、オプション、パスを決めて、それ以外はすべて止めます。
 
 > [!NOTE]
@@ -192,7 +192,7 @@ cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/skil
 ### 演習 A4-2: テストレビュー用の subagent を作る
 
 1. `.claude/agents/test-reviewer.md` を作ります。次のことを入れてください。
-   - `tools` は `Read, Grep, Glob, Bash` にし、本文で「ファイルは変更しない」「Bash は `git diff` などの読み取りと、テストの実行にだけ使う」と書く
+   - `tools` は `Read, Grep, Glob, Bash` にし、本文で「ファイルは変更しない」「Bash は `git diff` などの読み取りにだけ使う」と書く
    - A4.3 の `hooks` を書き、読み取りだけのコマンドしか実行できないようにする。フックのスクリプトは、完成例からコピーします（`cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/hooks/. .claude/hooks/`）
    - レビューの観点: テストが振る舞いを確かめているか、決まった値を返すだけの実装でも通ってしまわないか、テストが消されたり弱められたりしていないか
    - 問題があるものだけを、重要な順に報告する

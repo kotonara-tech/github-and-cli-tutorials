@@ -42,9 +42,7 @@ jobs:
 
       # .vscode/ の JSON は、コメントを書ける形式（JSONC）なので対象外にする（VS Code が編集中にチェックする）
       - name: JSON ファイル（Claude Code の設定など）を検証する
+        # ファイル名に空白などが含まれていても正しく渡せるように、-z と xargs -0 を使う
         run: |
-          status=0
-          for file in $(git ls-files '*.json' ':!:.vscode/**' ':!:**/.vscode/**'); do
-            python3 -m json.tool "$file" >/dev/null || { echo "JSON の書式が正しくありません: $file"; status=1; }
-          done
-          exit "$status"
+          git ls-files -z '*.json' ':!:.vscode/**' ':!:**/.vscode/**' |
+            xargs -0 -n 1 sh -c 'python3 -m json.tool "$1" >/dev/null || { echo "JSON の書式が正しくありません: $1"; exit 1; }' sh

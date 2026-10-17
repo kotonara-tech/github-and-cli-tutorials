@@ -15,7 +15,7 @@ hooks:
 
 ## 手順
 
-1. `git diff main...HEAD -- tests/` で、テストの変更を確認する。Bash で実行できるのは、`git diff` / `git log` / `git show` / `git status` と `bash tests/test_todo.sh` だけ（それ以外はフックで止められる）
+1. `git diff main...HEAD -- tests/` で、テストの変更を確認する。Bash で実行できるのは、`git diff` / `git log` / `git show` / `git status` だけ（それ以外はフックで止められる。テストの実行もしない）
    - オプションは `--stat`、`--oneline`、`-p`、`-5` など、よく使うものだけが使える。引用符や `$` などの記号は使えない
    - 止められたら、表示された理由を読んで、使える書き方で実行し直す
 2. `TODO.md` があれば読み、テストリストの項目とテストの対応を確かめる

@@ -3,7 +3,9 @@
 # test-reviewer サブエージェントのフック（PreToolUse）から呼ばれるスクリプト（readonly-bash.sh）
 #
 # サブエージェントが Bash でコマンドを実行する直前に呼ばれ、決まった形の読み取りだけのコマンド
-# （git diff / git log / git show / git status と、bash tests/test_todo.sh）以外を止めます。
+# （git diff / git log / git show / git status）以外を止めます。
+# テストの実行（bash tests/test_todo.sh）も止めます。レビューするテストのファイルに書かれた
+# コマンドがそのまま実行されてしまうためです。
 # subagent の説明に「ファイルを変更しない」と書くだけでは「お願い」なので、フックで確実に止めます。
 #
 # 「危ないものを止める」のではなく「安全だと分かっているものだけを通す」考え方（許可リスト）で確かめます。
@@ -11,7 +13,8 @@
 #      （引用符、\、$、`、{ }、; & | < > などを含むコマンドは、シェルが別の意味に変えてしまうので通さない）
 #   2. 空白で区切った最初の 2 語が、git diff / git log / git show / git status であること
 #   3. - で始まる語（オプション）は、下の一覧にあるものだけ
-#   4. それ以外の語（ブランチ名やファイル名）は、リポジトリの外を指していないこと（/ や ~ や .. で始まらない）
+#   4. それ以外の語（ブランチ名やファイル名）は、リポジトリの外を指していないこと（/ や ~ や .. で始まらない）。
+#      秘密の情報を書くファイル（.env）も指していないこと
 #
 # 終了コードの意味（Claude Code のフックの決まり）:
 #   0 : 実行してよい
@@ -34,16 +37,12 @@ command=$(json_string_field command)
 
 block() {
   {
-    echo "test-reviewer が実行できるのは、git diff / git log / git show / git status（--stat などの決まったオプションだけ）と bash tests/test_todo.sh だけです。"
+    echo "test-reviewer が実行できるのは、git diff / git log / git show / git status（--stat などの決まったオプションだけ）だけです。"
     echo "止めたコマンド: ${command}"
     echo "理由: $1"
   } >&2
   exit 2
 }
-
-if [ "$command" = "bash tests/test_todo.sh" ]; then
-  exit 0
-fi
 
 # 1. 使える文字だけでできているか
 case "$command" in
@@ -70,6 +69,7 @@ for word in "$@"; do
       -U[0-9] | -U[0-9][0-9] | --unified=[0-9] | --unified=[0-9][0-9]) ;;
     -*) block "使えないオプションです: ${word}" ;;
     /* | ~* | .. | ../* | */../* | */..) block "リポジトリの外を指している可能性があります: ${word}" ;;
+    *.env*) block "秘密の情報を書くファイル（.env）は読めません: ${word}" ;;
   esac
 done
 
