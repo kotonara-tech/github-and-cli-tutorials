@@ -97,7 +97,7 @@
 | 用語 | 意味 |
 | --- | --- |
 | **AGENTS.md** | さまざまな AI のコーディングエージェントが読む、エージェント向けのプロジェクトの説明ファイル（[発展編 第 2 章](../claude-code/02-claude-md.md)・[agents.md](https://agents.md/)） |
-| **auto モード** | 別の AI（分類器）が危険な操作だけを止め、それ以外は確認なしで進める権限モード。安全を保証するものではない（[発展編 第 5 章](../claude-code/05-harness.md#a52-権限モード)・[公式](https://code.claude.com/docs/ja/permission-modes)） |
+| **auto モード** | 別の AI（分類器）が、頼んだ範囲を超える操作や危険な操作を止め、それ以外は確認なしで進める権限モード。安全を保証するものではない（[発展編 第 5 章](../claude-code/05-harness.md#a52-権限モード)・[公式](https://code.claude.com/docs/ja/permission-modes)） |
 | **CLAUDE.md** | Claude Code が会話の始めに必ず読み込む、プロジェクトの決まりを書くファイル（[発展編 第 2 章](../claude-code/02-claude-md.md)・[公式](https://code.claude.com/docs/ja/memory)） |
 | **Claude Code** | Anthropic の AI のコーディングエージェント。ファイルの読み書きやコマンドの実行を自分で行う（[発展編 第 1 章](../claude-code/01-setup.md)・[公式](https://code.claude.com/docs/ja/overview)） |
 | **effort** | Claude がどれだけ念入りに考えて取り組むかの度合い。`low` から `max` まである（[発展編 第 3 章](../claude-code/03-models-and-effort.md)・[公式](https://code.claude.com/docs/ja/model-config)） |
