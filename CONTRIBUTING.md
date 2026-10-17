@@ -65,8 +65,9 @@ bash samples/todo-cli/tests/test_todo.sh
 bash exercises/scripts/tests/test_sandboxes.sh
 bash samples/claude-harness/tests/test_hooks.sh
 
-# JSON ファイル（VS Code と Claude Code の設定）の書式チェック
-git ls-files -z '*.json' | xargs -0 -r -n 1 python3 -m json.tool >/dev/null
+# JSON ファイル（Claude Code の設定など）の書式チェック
+# （.vscode/ の JSON はコメントを書ける形式（JSONC）なので対象外）
+git ls-files -z '*.json' ':!:.vscode/**' ':!:**/.vscode/**' | xargs -0 -r -n 1 python3 -m json.tool >/dev/null
 ```
 
 `shellcheck` は、macOS なら `brew install shellcheck`、Ubuntu なら `sudo apt install shellcheck` でインストールできます。

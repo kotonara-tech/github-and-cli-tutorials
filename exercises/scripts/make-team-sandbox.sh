@@ -64,8 +64,8 @@ cat <<EOF
 
 Alice さんと Bob さんの作業用リポジトリを、それぞれ別の VS Code のウィンドウで開きます。
 
-  code $(pwd)/alice
-  code $(pwd)/bob
+  code "$(pwd)/alice"
+  code "$(pwd)/bob"
 
 練習の例:
   1. alice のウィンドウで README.md の「今週の目標」を編集して commit し、push する
@@ -74,6 +74,6 @@ Alice さんと Bob さんの作業用リポジトリを、それぞれ別の VS
   3. bob のウィンドウで pull してコンフリクトを解消し、もう一度 push する
   4. alice のウィンドウで pull して、Bob さんの変更を取り込む
 
-（ターミナルだけで進める場合は、cd $(pwd)/alice と cd $(pwd)/bob で行き来します）
+（ターミナルだけで進める場合は、cd "$(pwd)/alice" と cd "$(pwd)/bob" で行き来します）
 詳しい手順は exercises/README.md を参照してください。
 EOF

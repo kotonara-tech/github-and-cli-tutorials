@@ -42,12 +42,13 @@ edit_json() {
   printf '{"tool_name":"Edit","tool_input":{"file_path":"%s","old_string":"a","new_string":"b"},"tool_response":{"filePath":"%s"}}' "$path" "$path"
 }
 
-# Bash ツールの入力を表す JSON を作る
+# Bash ツールの入力を表す JSON を作る（\ と " と改行は JSON のエスケープにする）
 #   bash_json <コマンド>
 bash_json() {
   local command="$1"
   command=${command//\\/\\\\}
   command=${command//\"/\\\"}
+  command=${command//$'\n'/\\n}
   printf '{"tool_name":"Bash","tool_input":{"command":"%s","description":"テスト用"}}' "$command"
 }
 
@@ -125,14 +126,28 @@ assert_contains "警告のあるスクリプトは shellcheck の警告番号を
 run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/a b\\c.sh")"
 assert_equal "空白や \\ を含むパス（JSON のエスケープ）も正しく読み取る" 2 "$STATUS"
 
-# Write ツールで、内容に "file_path" という文字列を含むファイルを作った場合も、
-# 最初の file_path（作ったファイル）をチェックする
-run_hook "$EDIT_HOOK" "$(printf '{"tool_name":"Write","tool_input":{"file_path":"%s","content":"echo \\"file_path\\": \\"x.md\\""}}' "${WORK_DIR}/bad.sh")"
-assert_equal "Write の入力でも最初の file_path をチェックする" 2 "$STATUS"
+# 項目が 2 つあるときは、最初の file_path（tool_input の中のもの）を使う
+run_hook "$EDIT_HOOK" "$(printf '{"tool_input":{"file_path":"%s"},"other":{"file_path":"%s"}}' "${WORK_DIR}/bad.sh" "${WORK_DIR}/good.sh")"
+assert_equal "file_path が 2 つあるときは最初のものをチェックする" 2 "$STATUS"
+
+# 書き込む内容（content）の中のエスケープされた "file_path" は、項目として扱わない
+run_hook "$EDIT_HOOK" "$(printf '{"tool_name":"Write","tool_input":{"content":"echo \\"file_path\\": \\"%s\\"","file_path":"%s"}}' "${WORK_DIR}/good.sh" "${WORK_DIR}/bad.sh")"
+assert_equal "content の中の \"file_path\" という文字列は項目として扱わない" 2 "$STATUS"
+
+# \uXXXX のエスケープ（ここでは \u002e = .）も元の文字に戻す
+run_hook "$EDIT_HOOK" "$(printf '{"tool_input":{"file_path":"%s/bad\\u002esh"}}' "$WORK_DIR")"
+assert_equal "\\uXXXX のエスケープを戻してからチェックする" 2 "$STATUS"
 
 SHELLCHECK="${WORK_DIR}/no-such-shellcheck" run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/good.sh")"
 assert_equal "shellcheck がないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
 assert_contains "shellcheck がないときはその旨を表示する" "shellcheck が見つからない" "$ERR"
+
+# lib/json.sh をコピーし忘れた場合
+mkdir -p "${WORK_DIR}/hooks-without-lib"
+cp "$EDIT_HOOK" "$READONLY_HOOK" "${WORK_DIR}/hooks-without-lib/"
+run_hook "${WORK_DIR}/hooks-without-lib/shellcheck-on-edit.sh" "$(edit_json "${WORK_DIR}/bad.sh")"
+assert_equal "lib/json.sh がないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
+assert_contains "lib/json.sh がないときはその旨を表示する" "lib/json.sh が見つからない" "$ERR"
 
 # ---------------------------------------------------------------------------
 # readonly-bash.sh: 読み取りだけのコマンドは実行してよい
@@ -147,10 +162,19 @@ done
 # readonly-bash.sh: それ以外のコマンドは止める
 # ---------------------------------------------------------------------------
 
-for command in "git commit -m x" "git checkout -- tests/" "sed -i s/a/b/ todo.sh" "git diff > out.txt" "git diff; rm -rf tests" "git log | tee out.txt" "git log \$(touch x)" "git diff --output=out.txt" "rm -rf tests"; do
+for command in "git commit -m x" "git checkout -- tests/" "sed -i s/a/b/ todo.sh" "rm -rf tests" \
+  "git diff > out.txt" "git diff; rm -rf tests" "git diff && rm -rf tests" "git log | tee out.txt" \
+  "git log \$(touch x)" "git log \`touch x\`" "git log -1"$'\n'"rm -rf tests" \
+  "git diff --output=out.txt" "git diff --ext-diff" "git log -p --textconv" "git diff --no-index /dev/null .env"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
-  assert_equal "読み取り以外のコマンドは止める（終了コード 2）: ${command}" 2 "$STATUS"
+  assert_equal "読み取り以外のコマンドは止める（終了コード 2）: ${command//$'\n'/\\n}" 2 "$STATUS"
 done
+
+run_hook "$READONLY_HOOK" '{"tool_name":"Bash","tool_input":{"description":"command がない"}}'
+assert_equal "command が取り出せないときは止める（終了コード 2）" 2 "$STATUS"
+
+run_hook "${WORK_DIR}/hooks-without-lib/readonly-bash.sh" "$(bash_json "git status")"
+assert_equal "lib/json.sh がないときは、安全のために止める（終了コード 2）" 2 "$STATUS"
 
 run_hook "$READONLY_HOOK" "$(bash_json "git commit -m x")"
 assert_contains "止めたときは理由を Claude に伝える" "test-reviewer が実行できるのは" "$ERR"

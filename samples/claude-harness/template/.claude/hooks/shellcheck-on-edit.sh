@@ -13,9 +13,15 @@
 #
 # 環境変数 SHELLCHECK で、使う shellcheck のパスを変えられます（テスト用）。
 
+# JSON から値を取り出す関数を読み込む（.claude/hooks/lib/ もあわせてコピーしておく）
+json_lib="$(dirname "$0")/lib/json.sh"
+if [ ! -f "$json_lib" ]; then
+  echo "${json_lib} が見つからないため、shellcheck のフックを実行できませんでした（.claude/hooks/ をまとめてコピーしてください）" >&2
+  exit 1
+fi
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=lib/json.sh
-source "$(dirname "$0")/lib/json.sh"
+source "$json_lib"
 
 set -uo pipefail
 

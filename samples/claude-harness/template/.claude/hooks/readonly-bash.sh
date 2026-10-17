@@ -11,9 +11,15 @@
 #   0 : 実行してよい
 #   2 : 実行させない。標準エラー出力の内容が Claude に渡される
 
+# JSON から値を取り出す関数を読み込む。見つからないときは、安全のためにコマンドを止める
+json_lib="$(dirname "$0")/lib/json.sh"
+if [ ! -f "$json_lib" ]; then
+  echo "${json_lib} が見つからないため、コマンドを確認できません。実行を止めました（.claude/hooks/ をまとめてコピーしてください）" >&2
+  exit 2
+fi
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=lib/json.sh
-source "$(dirname "$0")/lib/json.sh"
+source "$json_lib"
 
 set -uo pipefail
 
@@ -30,9 +36,9 @@ case "$command" in
   *[\;\&\|\<\>\`]* | *"\$("* | *$'\n'*) block ;;
 esac
 
-# 結果をファイルに書き出したり、外部のプログラムを動かしたりする git のオプションは止める
+# 結果をファイルに書き出す、外部のプログラムを動かす、リポジトリの外のファイルを読む git のオプションは止める
 case "$command" in
-  *--output* | *--ext-diff* | *--textconv*) block ;;
+  *--output* | *--ext-diff* | *--textconv* | *--no-index*) block ;;
 esac
 
 case "$command" in
