@@ -65,9 +65,8 @@ bash samples/todo-cli/tests/test_todo.sh
 bash exercises/scripts/tests/test_sandboxes.sh
 bash samples/claude-harness/tests/test_hooks.sh
 
-# JSON ファイル（Claude Code の設定など）の書式チェック
-# （.vscode/ の JSON はコメントを書ける形式（JSONC）なので対象外）
-git ls-files -z '*.json' ':!:.vscode/**' ':!:**/.vscode/**' |
+# JSON ファイル（Claude Code と VS Code の設定）の書式チェック
+git ls-files -z '*.json' |
   xargs -0 -r -n 1 sh -c 'python3 -m json.tool "$1" >/dev/null || { echo "JSON の書式が正しくありません: $1"; exit 1; }' sh
 ```
 

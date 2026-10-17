@@ -87,6 +87,7 @@ VS Code の ShellCheck 拡張機能とは別に、ターミナルから使える
 brew install shellcheck jq
 
 # Linux（Ubuntu）/ Windows（WSL2 の Ubuntu）
+sudo apt update
 sudo apt install -y shellcheck jq
 ```
 
@@ -166,7 +167,7 @@ code ~/.claude/settings.json
 }
 ```
 
-`default` は Manual モードの設定上の名前です。ファイルがすでにある場合は、`{ }` の中に `"permissions"` の部分を追加します。
+`default` は Manual モードの設定上の名前です。ファイルがすでにある場合は、`{ }` の中に `"permissions"` の部分を追加します。すでに `"permissions"` がある場合は、その中に `"defaultMode": "default"` の行だけを追加します（同じ名前の項目を 2 つ書くと、片方が無視されます）。
 Claude Code から「auto モードに切り替えるか」と 1 度だけ聞かれることがありますが、発展編の第 5 章まではそのまま（切り替えない）にしておきます。
 モードの詳しい説明は [第 5 章](05-harness.md) にあります（[公式ドキュメント: 権限モード](https://code.claude.com/docs/ja/permission-modes)）。
 

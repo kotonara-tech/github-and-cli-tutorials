@@ -40,9 +40,9 @@ jobs:
       - name: Claude Code のフックのテストを実行する
         run: bash samples/claude-harness/tests/test_hooks.sh
 
-      # .vscode/ の JSON は、コメントを書ける形式（JSONC）なので対象外にする（VS Code が編集中にチェックする）
-      - name: JSON ファイル（Claude Code の設定など）を検証する
+      # .vscode/ の JSON も、コメントを書かずに作っているので、ほかの JSON と同じようにチェックする
+      - name: JSON ファイル（Claude Code と VS Code の設定）を検証する
         # ファイル名に空白などが含まれていても正しく渡せるように、-z と xargs -0 を使う（-r: 対象がなければ何もしない）
         run: |
-          git ls-files -z '*.json' ':!:.vscode/**' ':!:**/.vscode/**' |
+          git ls-files -z '*.json' |
             xargs -0 -r -n 1 sh -c 'python3 -m json.tool "$1" >/dev/null || { echo "JSON の書式が正しくありません: $1"; exit 1; }' sh

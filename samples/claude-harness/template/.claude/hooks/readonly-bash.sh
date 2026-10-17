@@ -43,7 +43,9 @@ fi
 # 標準入力で渡される JSON から、実行しようとしているコマンド（tool_input.command）を取り出す
 #   例: {"tool_name":"Bash","tool_input":{"command":"git diff main...HEAD -- tests/","description":"..."},...}
 #   // empty: 項目がないときに、null ではなく空の文字列にする
-if ! command=$("$JQ" -r '.tool_input.command // empty'); then
+#   select(...): 改行・タブ・NUL などの制御文字を含むコマンドは、空にして止める
+#                （bash の $(...) は NUL を黙って取り除くので、確かめる文字列と実行される文字列がずれないように）
+if ! command=$("$JQ" -r '.tool_input.command // empty | select(explode | any(. < 32 or . == 127) | not)'); then
   echo "フックが受け取った JSON を読み取れないため、コマンドを確認できません。安全のために実行を止めました" >&2
   exit 2
 fi

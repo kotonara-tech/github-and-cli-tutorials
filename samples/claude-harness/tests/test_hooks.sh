@@ -224,6 +224,12 @@ assert_equal "tool_input の中の、さらに内側の command は使わない"
 run_hook "$READONLY_HOOK" "$(bash_json "git commit -m x")"
 assert_contains "止めたときは理由を Claude に伝える" "test-reviewer が実行できるのは" "$ERR"
 
+# NUL などの制御文字（bash は NUL を取り除くので、確かめる文字列と実行される文字列がずれてしまう）
+for command in 'git show HEAD:.env\u0000rc' 'git diff -- .\u0000.x' 'git log -1\trm'; do
+  run_hook "$READONLY_HOOK" "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}"
+  assert_equal "制御文字を含むコマンドは止める（終了コード 2）: ${command}" 2 "$STATUS"
+done
+
 run_hook "$READONLY_HOOK" '{"tool_name":"Bash","tool_input":{"description":"command がない"}}'
 assert_equal "command が取り出せないときは止める（終了コード 2）" 2 "$STATUS"
 
