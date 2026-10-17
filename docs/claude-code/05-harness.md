@@ -105,7 +105,8 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
       "Bash(git push -f*)",
       "Bash(git push * -f*)",
       "Bash(git push * +*)",
-      "Read(./.env)"
+      "Read(./.env)",
+      "Read(./.env.*)"
     ]
   }
 }
@@ -115,7 +116,7 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
 | --- | --- |
 | `allow` | 確認なしで許可する。テストの実行、shellcheck、コミットまでは任せる |
 | `ask` | どのモードでも、必ず確認する。GitHub に送る操作（push、Pull Request）は、自分で内容を見てから行う |
-| `deny` | どのモードでも拒否する。強制 push の代表的な書き方（`--force`、`--force-with-lease`、`-f`、`+ブランチ名`）と、秘密の情報を書くファイル（`.env`）の読み取りを禁止する |
+| `deny` | どのモードでも拒否する。強制 push の代表的な書き方（`--force`、`--force-with-lease`、`-f`、`+ブランチ名`）と、秘密の情報を書くファイル（`.env`、`.env.local` など）の読み取りを禁止する |
 
 - `Bash(git add *)` の `*` は「何が続いてもよい」という意味です。`Bash(git add *)` は `git add todo.sh` にも `git add`（引数なし）にも当てはまります。
 - `*` は途中にも書けます。`Bash(git push *--force*)` は、`git push --force` にも `git push origin main --force-with-lease` にも当てはまります。
@@ -163,7 +164,7 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
 - `matcher` の `Edit|Write` は「ファイルの編集（Edit）または作成（Write）のツールを使ったとき」という意味です。
 - `command` は、シェルで実行するコマンドです。`$CLAUDE_PROJECT_DIR` は、リポジトリのルートのパスが入った環境変数です。パスに空白が含まれていても動くように、`\"`（JSON の中のダブルクォート）で囲んでいます。
 - `bash` で実行するので、スクリプトに実行の権限（`chmod +x`）がなくても動きます。
-- 実行するスクリプト [shellcheck-on-edit.sh](../../samples/claude-harness/template/.claude/hooks/shellcheck-on-edit.sh) は、Claude Code から受け取った情報（JSON）から編集したファイルのパスを取り出し、`.sh` のファイルなら shellcheck でチェックします。JSON から値を取り出す処理は、[lib/json.sh](../../samples/claude-harness/template/.claude/hooks/lib/json.sh) にまとめています。
+- 実行するスクリプト [shellcheck-on-edit.sh](../../samples/claude-harness/template/.claude/hooks/shellcheck-on-edit.sh) は、Claude Code から受け取った情報（JSON）から編集したファイルのパスを取り出し、`.sh` のファイルなら shellcheck でチェックします。JSON から値を取り出すには、公式ドキュメントの例と同じく jq（[第 1 章](01-setup.md#shellcheck-と-jq)）を使います（`jq -r '.tool_input.file_path // empty'`）。
 
 フックのスクリプトは、**終了コード** で結果を伝えます。
 
@@ -285,7 +286,7 @@ cd /tmp
    cp -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/settings.json .claude/
    ```
 
-   フックのスクリプト（`.claude/hooks/` の中のファイル）は、[第 4 章](04-skills-and-agents.md#演習-a4-2-テストレビュー用の-subagent-を作る) の演習 A4-2 でコピーしてあります。`ls .claude/hooks` で `shellcheck-on-edit.sh` と `lib/` があることを確認してください。ない場合だけ、`cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/hooks/. .claude/hooks/` でコピーします。
+   フックのスクリプト（`.claude/hooks/` の中のファイル）は、[第 4 章](04-skills-and-agents.md#演習-a4-2-テストレビュー用の-subagent-を作る) の演習 A4-2 でコピーしてあります。`ls .claude/hooks` で `shellcheck-on-edit.sh` と `readonly-bash.sh` があることを確認してください。ない場合だけ、`cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/hooks/. .claude/hooks/` でコピーします。
 
 3. `.claude/settings.json` を VS Code で開き、A5.4 と A5.5 の説明と照らして、それぞれの行が何をするのかを確かめます。
 4. Claude Code を起動し直し、`/permissions` と `/hooks` で、設定が読み込まれていることを確認します。

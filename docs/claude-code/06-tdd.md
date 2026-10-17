@@ -125,7 +125,6 @@ $ ./todo.sh stats extra
    .claude/settings.json
    .claude/hooks/shellcheck-on-edit.sh
    .claude/hooks/readonly-bash.sh
-   .claude/hooks/lib/json.sh
    .claude/skills/tdd-todo/SKILL.md
    .claude/skills/tdd-go/SKILL.md
    .claude/agents/test-reviewer.md

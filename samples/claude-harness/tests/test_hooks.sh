@@ -6,7 +6,7 @@
 #   bash samples/claude-harness/tests/test_hooks.sh
 #
 # Claude Code がフックに渡すのと同じ形の JSON を標準入力に渡し、
-# 終了コードと標準エラー出力を確かめます。shellcheck が必要です。
+# 終了コードと標準エラー出力を確かめます。shellcheck と jq が必要です。
 #
 # assert_equal などの関数は samples/todo-cli/tests/test_todo.sh と同じものです。
 # それぞれのテストを 1 つのファイルだけで読めるように、あえて共通化していません。
@@ -17,6 +17,13 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 HOOKS_DIR="${SCRIPT_DIR}/../template/.claude/hooks"
 EDIT_HOOK="${HOOKS_DIR}/shellcheck-on-edit.sh"
 READONLY_HOOK="${HOOKS_DIR}/readonly-bash.sh"
+
+for tool in shellcheck jq; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "このテストには ${tool} が必要です。インストールしてから実行してください。" >&2
+    exit 1
+  fi
+done
 
 PASSED=0
 FAILED=0
@@ -126,9 +133,11 @@ assert_contains "警告のあるスクリプトは shellcheck の警告番号を
 run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/a b\\c.sh")"
 assert_equal "空白や \\ を含むパス（JSON のエスケープ）も正しく読み取る" 2 "$STATUS"
 
-# tool_input の外にも file_path があるときは、tool_input の中のものを使う
+# tool_input の外や、tool_input の中のさらに内側にも file_path があるときは、tool_input.file_path を使う
 run_hook "$EDIT_HOOK" "$(printf '{"file_path":"%s","tool_input":{"file_path":"%s"},"other":{"file_path":"%s"}}' "${WORK_DIR}/good.sh" "${WORK_DIR}/bad.sh" "${WORK_DIR}/good.sh")"
 assert_equal "tool_input の外の file_path は使わず、tool_input の中のものをチェックする" 2 "$STATUS"
+run_hook "$EDIT_HOOK" "$(printf '{"tool_input":{"options":{"file_path":"%s"},"file_path":"%s"}}' "${WORK_DIR}/good.sh" "${WORK_DIR}/bad.sh")"
+assert_equal "tool_input の中の、さらに内側の file_path は使わない" 2 "$STATUS"
 
 # 複数行に整形された JSON でも読み取れる
 run_hook "$EDIT_HOOK" "$(printf '{\n  "tool_name": "Edit",\n  "tool_input": {\n    "file_path": "%s"\n  }\n}' "${WORK_DIR}/bad.sh")"
@@ -146,12 +155,9 @@ SHELLCHECK="${WORK_DIR}/no-such-shellcheck" run_hook "$EDIT_HOOK" "$(edit_json "
 assert_equal "shellcheck がないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
 assert_contains "shellcheck がないときはその旨を表示する" "shellcheck が見つからない" "$ERR"
 
-# lib/json.sh をコピーし忘れた場合
-mkdir -p "${WORK_DIR}/hooks-without-lib"
-cp "$EDIT_HOOK" "$READONLY_HOOK" "${WORK_DIR}/hooks-without-lib/"
-run_hook "${WORK_DIR}/hooks-without-lib/shellcheck-on-edit.sh" "$(edit_json "${WORK_DIR}/bad.sh")"
-assert_equal "lib/json.sh がないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
-assert_contains "lib/json.sh がないときはその旨を表示する" "lib/json.sh が見つからない" "$ERR"
+JQ="${WORK_DIR}/no-such-jq" run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/bad.sh")"
+assert_equal "jq がないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
+assert_contains "jq がないときはその旨を表示する" "jq が見つからない" "$ERR"
 
 # ---------------------------------------------------------------------------
 # readonly-bash.sh: 決まった形の読み取りだけのコマンドは実行してよい
@@ -190,15 +196,17 @@ for command in "git diff /dev/null /etc/hostname" "git diff -- ../outside.txt" "
   assert_equal "リポジトリの外を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
 done
 
-# 秘密の情報を書くファイル（.env）
-for command in "git show HEAD:.env" "git log -p -- .env" "git diff HEAD~1 -- config/.env.local"; do
+# 秘密の情報を書くファイル（.env など）
+for command in "git show HEAD:.env" "git log -p -- .env" "git show HEAD:.env.local" "git diff HEAD~1 -- config/.env.production"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal ".env を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
 done
 
-# tool_input の外にある同じ名前の項目は使わない（Claude Code が項目を増やしたり、順番を変えたりしても安全なように）
+# tool_input.command だけを見る（ほかの場所にある同じ名前の項目は使わない）
 run_hook "$READONLY_HOOK" '{"command":"git status","tool_name":"Bash","tool_input":{"command":"rm -rf tests"}}'
 assert_equal "tool_input の外の command は使わない" 2 "$STATUS"
+run_hook "$READONLY_HOOK" '{"tool_name":"Bash","tool_input":{"options":{"command":"git status"},"command":"rm -rf tests"}}'
+assert_equal "tool_input の中の、さらに内側の command は使わない" 2 "$STATUS"
 
 run_hook "$READONLY_HOOK" "$(bash_json "git commit -m x")"
 assert_contains "止めたときは理由を Claude に伝える" "test-reviewer が実行できるのは" "$ERR"
@@ -206,8 +214,9 @@ assert_contains "止めたときは理由を Claude に伝える" "test-reviewer
 run_hook "$READONLY_HOOK" '{"tool_name":"Bash","tool_input":{"description":"command がない"}}'
 assert_equal "command が取り出せないときは止める（終了コード 2）" 2 "$STATUS"
 
-run_hook "${WORK_DIR}/hooks-without-lib/readonly-bash.sh" "$(bash_json "git status")"
-assert_equal "lib/json.sh がないときは、安全のために止める（終了コード 2）" 2 "$STATUS"
+JQ="${WORK_DIR}/no-such-jq" run_hook "$READONLY_HOOK" "$(bash_json "git status")"
+assert_equal "jq がないときは、安全のために止める（終了コード 2）" 2 "$STATUS"
+assert_contains "jq がないときはその旨を表示する" "jq が見つからない" "$ERR"
 
 # ---------------------------------------------------------------------------
 # 結果

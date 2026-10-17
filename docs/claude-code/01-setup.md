@@ -76,21 +76,23 @@ claude --version
 claude doctor
 ```
 
-### shellcheck
+### shellcheck と jq
 
 発展編では、Claude Code がシェルスクリプトを編集するたびに、[ShellCheck](https://www.shellcheck.net/) で書き方の誤りをチェックする仕組みを作ります（[第 5 章](05-harness.md)）。
 VS Code の ShellCheck 拡張機能とは別に、ターミナルから使える `shellcheck` コマンドをインストールしておきます。
+あわせて、JSON を読み取る [jq](https://jqlang.org/) もインストールします。この仕組みのスクリプトは、Claude Code から受け取る情報（JSON）を jq で読み取ります（公式ドキュメントの例と同じやり方です）。
 
 ```bash
 # macOS（Homebrew）
-brew install shellcheck
+brew install shellcheck jq
 
 # Linux（Ubuntu）/ Windows（WSL2 の Ubuntu）
-sudo apt install -y shellcheck
+sudo apt install -y shellcheck jq
 ```
 
 ```bash
 shellcheck --version
+jq --version
 ```
 
 ## A1.4 初めて起動する

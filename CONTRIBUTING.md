@@ -60,7 +60,7 @@ npx --yes markdownlint-cli2@0.18.1
 # シェルスクリプトのチェック（shellcheck が必要）
 git ls-files -z '*.sh' | xargs -0 shellcheck
 
-# サンプルと練習用スクリプトのテスト
+# サンプルと練習用スクリプトのテスト（test_hooks.sh には shellcheck と jq が必要）
 bash samples/todo-cli/tests/test_todo.sh
 bash exercises/scripts/tests/test_sandboxes.sh
 bash samples/claude-harness/tests/test_hooks.sh
@@ -71,7 +71,7 @@ git ls-files -z '*.json' ':!:.vscode/**' ':!:**/.vscode/**' |
   xargs -0 -n 1 sh -c 'python3 -m json.tool "$1" >/dev/null || { echo "JSON の書式が正しくありません: $1"; exit 1; }' sh
 ```
 
-`shellcheck` は、macOS なら `brew install shellcheck`、Ubuntu なら `sudo apt install shellcheck` でインストールできます。
+`shellcheck` と `jq` は、macOS なら `brew install shellcheck jq`、Ubuntu なら `sudo apt install shellcheck jq` でインストールできます。
 
 ### 4. Pull Request を作る
 

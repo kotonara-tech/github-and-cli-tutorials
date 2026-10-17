@@ -15,8 +15,7 @@ claude-harness/
 │       ├── settings.json              # 権限の設定とフック（第 5 章）
 │       ├── hooks/
 │       │   ├── shellcheck-on-edit.sh  # .sh を編集したら shellcheck を実行するフック（第 5 章）
-│       │   ├── readonly-bash.sh       # test-reviewer に読み取りだけのコマンドを実行させるフック（第 4 章）
-│       │   └── lib/json.sh            # フックが受け取る JSON から値を取り出す関数
+│       │   └── readonly-bash.sh       # test-reviewer に読み取りだけのコマンドを実行させるフック（第 4 章）
 │       ├── skills/
 │       │   ├── tdd-todo/SKILL.md      # /tdd-todo: テストリスト（TODO.md）を作る（第 4 章）
 │       │   └── tdd-go/SKILL.md        # /tdd-go: TDD の 1 サイクルを回す（第 4 章）
@@ -53,7 +52,7 @@ cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/. .c
 
 > [!NOTE]
 > `.claude/settings.json` の「許可」（`allow`）の設定は、Claude Code でそのフォルダーを信頼したあとに有効になります（[発展編 第 1 章](../../docs/claude-code/01-setup.md#a14-初めて起動する)）。
-> フックを使うには、`shellcheck` コマンドが必要です（[発展編 第 1 章](../../docs/claude-code/01-setup.md#a13-インストールする)）。
+> フックを使うには、`shellcheck` と `jq` のコマンドが必要です（[発展編 第 1 章](../../docs/claude-code/01-setup.md#a13-インストールする)）。
 
 ## このディレクトリで Claude Code を使うときの注意
 
@@ -62,7 +61,7 @@ cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/. .c
 
 ## テスト
 
-フックのスクリプトのテストは、この教材のリポジトリのルートで、次のように実行します（`shellcheck` が必要です）。
+フックのスクリプトのテストは、この教材のリポジトリのルートで、次のように実行します（`shellcheck` と `jq` が必要です）。
 
 ```bash
 bash samples/claude-harness/tests/test_hooks.sh

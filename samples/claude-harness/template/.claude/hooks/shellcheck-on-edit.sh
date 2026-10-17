@@ -12,25 +12,23 @@
 #   1 : フック自体の問題（shellcheck が見つからないなど）。Claude には伝わらず、
 #       Claude Code の会話の表示に「hook error」として、標準エラー出力の 1 行目が表示される
 #
-# 環境変数 SHELLCHECK で、使う shellcheck のパスを変えられます（テスト用）。
-
-# JSON から値を取り出す関数を読み込む（.claude/hooks/lib/ もあわせてコピーしておく）
-json_lib="$(dirname "$0")/lib/json.sh"
-if [ ! -f "$json_lib" ]; then
-  echo "${json_lib} が見つからないため、shellcheck のフックを実行できませんでした（.claude/hooks/ をまとめてコピーしてください）" >&2
-  exit 1
-fi
-# shellcheck source-path=SCRIPTDIR
-# shellcheck source=lib/json.sh
-source "$json_lib"
+# JSON を読むために jq を使います（shellcheck とあわせて、発展編 第 1 章でインストールします）。
+# 環境変数 JQ と SHELLCHECK で、使うコマンドのパスを変えられます（テスト用）。
 
 set -uo pipefail
 
+JQ="${JQ:-jq}"
 SHELLCHECK="${SHELLCHECK:-shellcheck}"
+
+if ! command -v "$JQ" >/dev/null 2>&1; then
+  echo "jq が見つからないため、shellcheck のフックを実行できませんでした（発展編 第 1 章の手順でインストールしてください）" >&2
+  exit 1
+fi
 
 # 標準入力で渡される JSON から、編集したファイルのパス（tool_input.file_path）を取り出す
 #   例: {"tool_name":"Edit","tool_input":{"file_path":"/home/hanako/todo-cli-practice/todo.sh",...},...}
-file=$(json_string_field file_path)
+#   // empty: 項目がないときに、null ではなく空の文字列にする
+file=$("$JQ" -r '.tool_input.file_path // empty')
 
 # シェルスクリプト以外は対象外
 case "$file" in

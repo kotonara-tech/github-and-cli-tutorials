@@ -14,26 +14,29 @@
 #   2. 空白で区切った最初の 2 語が、git diff / git log / git show / git status であること
 #   3. - で始まる語（オプション）は、下の一覧にあるものだけ
 #   4. それ以外の語（ブランチ名やファイル名）は、リポジトリの外を指していないこと（/ や ~ や .. で始まらない）。
-#      秘密の情報を書くファイル（.env）も指していないこと
+#      秘密の情報を書くファイル（.env、.env.local など）も、名前で指定できない
+#      （.env をコミットしてしまうと、git log -p などの出力には含まれてしまいます。.env はコミットしないこと）
 #
 # 終了コードの意味（Claude Code のフックの決まり）:
 #   0 : 実行してよい
 #   2 : 実行させない。標準エラー出力の内容が Claude に渡される
-
-# JSON から値を取り出す関数を読み込む。見つからないときは、安全のためにコマンドを止める
-json_lib="$(dirname "$0")/lib/json.sh"
-if [ ! -f "$json_lib" ]; then
-  echo "${json_lib} が見つからないため、コマンドを確認できません。実行を止めました（.claude/hooks/ をまとめてコピーしてください）" >&2
-  exit 2
-fi
-# shellcheck source-path=SCRIPTDIR
-# shellcheck source=lib/json.sh
-source "$json_lib"
+#
+# JSON を読むために jq を使います（発展編 第 1 章でインストールします）。
+# 環境変数 JQ で、使う jq のパスを変えられます（テスト用）。
 
 set -uo pipefail
 
+JQ="${JQ:-jq}"
+
+if ! command -v "$JQ" >/dev/null 2>&1; then
+  echo "jq が見つからないため、コマンドを確認できません。安全のために実行を止めました（発展編 第 1 章の手順でインストールしてください）" >&2
+  exit 2
+fi
+
 # 標準入力で渡される JSON から、実行しようとしているコマンド（tool_input.command）を取り出す
-command=$(json_string_field command)
+#   例: {"tool_name":"Bash","tool_input":{"command":"git diff main...HEAD -- tests/","description":"..."},...}
+#   // empty: 項目がないときに、null ではなく空の文字列にする
+command=$("$JQ" -r '.tool_input.command // empty')
 
 block() {
   {
@@ -69,7 +72,7 @@ for word in "$@"; do
       -U[0-9] | -U[0-9][0-9] | --unified=[0-9] | --unified=[0-9][0-9]) ;;
     -*) block "使えないオプションです: ${word}" ;;
     /* | ~* | .. | ../* | */../* | */..) block "リポジトリの外を指している可能性があります: ${word}" ;;
-    *.env*) block "秘密の情報を書くファイル（.env）は読めません: ${word}" ;;
+    *.env*) block "秘密の情報を書くファイル（.env など）は読めません: ${word}" ;;
   esac
 done
 
