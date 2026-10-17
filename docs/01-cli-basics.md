@@ -396,7 +396,7 @@ TODO_FILE=/tmp/my-todo.txt ./todo.sh list
 統合ターミナルで `code` コマンドを使うと、ファイルやフォルダを VS Code で開けます。
 
 ```bash
-code memo.txt     # memo.txt をエディターで開く（ファイルがなければ新しく作られる）
+code memo.txt     # memo.txt をエディターで開く（ファイルがなければ、保存したときに作られる）
 code .            # 今いるディレクトリ（.）をフォルダとして VS Code で開く
 ```
 

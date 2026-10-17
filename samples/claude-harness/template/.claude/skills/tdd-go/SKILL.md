@@ -31,6 +31,7 @@ disable-model-invocation: true
 ## 4. 記録する
 
 - `TODO.md` のその項目を `- [x]` にする。作業中に気づいたことは、新しい項目として `TODO.md` に追加する
+- コミットの前に、`bash tests/test_todo.sh` と `shellcheck todo.sh tests/*.sh` を実行し、どちらも成功することを確かめる
 - コミットする。種類ごとに、別のコミットにする
   - テストと実装（振る舞いの変更）: `feat:` または `fix:`
   - テストの追加だけ（最初から成功したとき）: `test:`

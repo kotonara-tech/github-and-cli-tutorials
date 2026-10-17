@@ -51,7 +51,8 @@ fi
 
 # 「shellcheck」の終了コード: 0 = 警告なし、1 = 警告あり、それ以外 = 実行できなかった
 # -x: source で読み込んでいるファイルもたどってチェックする
-output=$("$SHELLCHECK" --color=never -x "$file" 2>&1)
+# --source-path=SCRIPTDIR: 読み込むファイルを、チェックするスクリプトと同じディレクトリから探す
+output=$("$SHELLCHECK" --color=never -x --source-path=SCRIPTDIR "$file" 2>&1)
 status=$?
 case "$status" in
   0)

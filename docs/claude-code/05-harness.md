@@ -278,10 +278,15 @@ cd /tmp
    git switch -c chore/claude-harness
    ```
 
-2. 完成例の `.claude/settings.json` を、自分のリポジトリにまだないか確認してから取り込みます。すでにある場合は、`code --diff` で見比べて、必要な部分だけを自分のファイルに書き写します。
+2. 完成例の `.claude/settings.json` を取り込みます。まず、自分のリポジトリにすでにあるかを確認します。
 
    ```bash
    ls .claude
+   ```
+
+   `settings.json` がすでにある場合は、`code --diff` で見比べて、必要な部分だけを自分のファイルに書き写します。
+
+   ```bash
    code --diff ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/settings.json .claude/settings.json
    ```
 

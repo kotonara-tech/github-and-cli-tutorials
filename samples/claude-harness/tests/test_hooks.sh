@@ -128,6 +128,18 @@ assert_equal "警告のあるスクリプトは終了コード 2 で終わる（
 assert_contains "警告のあるスクリプトはファイル名を表示する" "bad.sh に警告" "$ERR"
 assert_contains "警告のあるスクリプトは shellcheck の警告番号を表示する" "SC2164" "$ERR"
 
+# source で読み込むファイルは、スクリプトと同じディレクトリから探す（フックはリポジトリのルートで実行される）
+mkdir -p "${WORK_DIR}/scripts"
+cat >"${WORK_DIR}/scripts/main.sh" <<'SCRIPT'
+#!/usr/bin/env bash
+# shellcheck source=lib.sh
+source "$(dirname "$0")/lib.sh"
+greet
+SCRIPT
+printf '%s\n' '# shellcheck shell=bash' 'greet() { echo "hi"; }' >"${WORK_DIR}/scripts/lib.sh"
+run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/scripts/main.sh")"
+assert_equal "source で同じディレクトリのファイルを読み込むスクリプトは、警告なしで終わる" 0 "$STATUS"
+
 run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/a b\\c.sh")"
 assert_equal "空白や \\ を含むパス（JSON のエスケープ）も正しく読み取る" 2 "$STATUS"
 
