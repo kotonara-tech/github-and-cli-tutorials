@@ -10,7 +10,7 @@
     ],
     "ask": [
       "Bash(git push *)",
-      "Bash(gh pr *)"
+      "Bash(gh *)"
     ],
     "deny": [
       "Bash(git push *--force*)",

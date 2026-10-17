@@ -20,6 +20,8 @@
 #
 # このフックが防ぐのは、test-reviewer がコマンドでファイルを変更したり、リポジトリの外を読んだりすることです。
 # git の設定（.git/config など）があらかじめ書き換えられている場合までは防げません。
+# このフックが確かめるのは Bash のコマンドだけです。Read や Grep のツールで .env を読むことは、
+# .claude/settings.json の deny（発展編 第 5 章）で防ぎます。
 #
 # 終了コードの意味（Claude Code のフックの決まり）:
 #   0 : 実行してよい
@@ -40,7 +42,10 @@ fi
 # 標準入力で渡される JSON から、実行しようとしているコマンド（tool_input.command）を取り出す
 #   例: {"tool_name":"Bash","tool_input":{"command":"git diff main...HEAD -- tests/","description":"..."},...}
 #   // empty: 項目がないときに、null ではなく空の文字列にする
-command=$("$JQ" -r '.tool_input.command // empty')
+if ! command=$("$JQ" -r '.tool_input.command // empty'); then
+  echo "フックが受け取った JSON を読み取れないため、コマンドを確認できません。安全のために実行を止めました" >&2
+  exit 2
+fi
 
 block() {
   {

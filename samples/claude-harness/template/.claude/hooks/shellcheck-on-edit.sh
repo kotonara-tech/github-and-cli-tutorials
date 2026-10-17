@@ -28,7 +28,10 @@ fi
 # 標準入力で渡される JSON から、編集したファイルのパス（tool_input.file_path）を取り出す
 #   例: {"tool_name":"Edit","tool_input":{"file_path":"/home/hanako/todo-cli-practice/todo.sh",...},...}
 #   // empty: 項目がないときに、null ではなく空の文字列にする
-file=$("$JQ" -r '.tool_input.file_path // empty')
+if ! file=$("$JQ" -r '.tool_input.file_path // empty'); then
+  echo "フックが受け取った JSON を読み取れないため、shellcheck を実行できませんでした" >&2
+  exit 1
+fi
 
 # シェルスクリプト以外は対象外
 case "$file" in

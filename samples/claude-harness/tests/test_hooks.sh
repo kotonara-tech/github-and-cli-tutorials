@@ -40,23 +40,17 @@ run_hook() {
   STATUS=$?
 }
 
-# Edit ツールの入力を表す JSON を作る（パスの \ と " は JSON のエスケープにする）
+# Edit ツールの入力を表す JSON を作る（jq の --arg で渡すので、\ や " や改行も正しくエスケープされる）
 #   edit_json <ファイルのパス>
 edit_json() {
-  local path="$1"
-  path=${path//\\/\\\\}
-  path=${path//\"/\\\"}
-  printf '{"tool_name":"Edit","tool_input":{"file_path":"%s","old_string":"a","new_string":"b"},"tool_response":{"filePath":"%s"}}' "$path" "$path"
+  jq -nc --arg path "$1" \
+    '{tool_name: "Edit", tool_input: {file_path: $path, old_string: "a", new_string: "b"}, tool_response: {filePath: $path}}'
 }
 
-# Bash ツールの入力を表す JSON を作る（\ と " と改行は JSON のエスケープにする）
+# Bash ツールの入力を表す JSON を作る
 #   bash_json <コマンド>
 bash_json() {
-  local command="$1"
-  command=${command//\\/\\\\}
-  command=${command//\"/\\\"}
-  command=${command//$'\n'/\\n}
-  printf '{"tool_name":"Bash","tool_input":{"command":"%s","description":"テスト用"}}' "$command"
+  jq -nc --arg command "$1" '{tool_name: "Bash", tool_input: {command: $command, description: "テスト用"}}'
 }
 
 pass() {
@@ -112,6 +106,10 @@ assert_equal ".sh 以外のファイルは何も表示しない" "" "$ERR"
 
 run_hook "$EDIT_HOOK" '{"tool_name":"Bash","tool_input":{"command":"ls"}}'
 assert_equal "file_path がない入力は終了コード 0 で終わる" 0 "$STATUS"
+
+run_hook "$EDIT_HOOK" '{"tool_input":{"file_path":'
+assert_equal "JSON を読み取れないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
+assert_contains "JSON を読み取れないときはその旨を表示する" "JSON を読み取れない" "$ERR"
 
 run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/missing.sh")"
 assert_equal "見つからない .sh は終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
@@ -216,6 +214,10 @@ assert_contains "止めたときは理由を Claude に伝える" "test-reviewer
 
 run_hook "$READONLY_HOOK" '{"tool_name":"Bash","tool_input":{"description":"command がない"}}'
 assert_equal "command が取り出せないときは止める（終了コード 2）" 2 "$STATUS"
+
+run_hook "$READONLY_HOOK" '{"tool_input":{"command":"git status"'
+assert_equal "JSON を読み取れないときは止める（終了コード 2）" 2 "$STATUS"
+assert_contains "JSON を読み取れないときはその旨を表示する" "JSON を読み取れない" "$ERR"
 
 JQ="${WORK_DIR}/no-such-jq" run_hook "$READONLY_HOOK" "$(bash_json "git status")"
 assert_equal "jq がないときは、安全のために止める（終了コード 2）" 2 "$STATUS"
