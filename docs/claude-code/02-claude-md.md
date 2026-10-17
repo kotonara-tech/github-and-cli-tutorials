@@ -42,7 +42,7 @@ Claude Code は、会話を始めるたびに、リポジトリについて何�
 AI のコーディングエージェントは、Claude Code のほかにもたくさんあります。
 [AGENTS.md](https://agents.md/) は、さまざまなエージェントが共通して読む「エージェント向けの README」として広く使われているファイルです。
 
-Claude Code は、`CLAUDE.md` がないときだけ `AGENTS.md` を読み込みます。両方を使うときは、次の形にするのがおすすめです。
+Claude Code は、`CLAUDE.md` がないときだけ `AGENTS.md` を読み込みます（バージョン 2.1.277 以降。[公式ドキュメント: AGENTS.md](https://code.claude.com/docs/ja/memory#agents-md)）。`CLAUDE.md` があると、`AGENTS.md` は読み込まれません。両方を使うときは、次の形にするのがおすすめです。
 
 - **`AGENTS.md`**: どのエージェントにも伝えたい、プロジェクトの決まりを書く
 - **`CLAUDE.md`**: 1 行目に `@AGENTS.md` と書いて AGENTS.md を取り込み、その下に Claude Code だけの補足を書く
