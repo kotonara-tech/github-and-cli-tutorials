@@ -330,7 +330,7 @@ rm scratch.sh
 <summary>解答例</summary>
 
 ```bash
-git add .claude/settings.json .claude/hooks README.md
+git add .claude/settings.json .claude/hooks README.md .gitignore
 git commit -m "chore: Claude Code の権限の設定と shellcheck のフックを追加"
 git push -u origin chore/claude-harness
 gh pr create --title "Claude Code の権限の設定と shellcheck のフックを追加" --body "テストと shellcheck の実行を許可し、push と強制 push を制限します。シェルスクリプトを編集したら、フックで shellcheck を自動で実行します。"
