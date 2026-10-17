@@ -108,6 +108,25 @@ model: sonnet
 フロントマターの下に書いた文章が、その subagent の役割の説明（システムプロンプト）になります。
 subagent は、あなたとの会話の内容を知りません。必要な情報（何をレビューするのか、何を基準にするのか）は、本文に書いておきます。
 
+### 「ファイルを変更しない」を仕組みで守る
+
+`tools` に `Bash` を入れると、subagent は `git diff` のような読み取りのコマンドだけでなく、`git commit` や `rm` も実行できてしまいます。
+本文に「ファイルは変更しない」と書くだけでは「お願い」なので、完成例では、subagent のフロントマターに **フック**（[第 5 章](05-harness.md#a55-フックで必ず実行する)）を書いて、Bash のコマンドを実行する直前（`PreToolUse`）にチェックしています。
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-bash.sh"'
+```
+
+[readonly-bash.sh](../../samples/claude-harness/template/.claude/hooks/readonly-bash.sh) は、`git diff` / `git log` / `git show` / `git status` と `bash tests/test_todo.sh` 以外のコマンドを、終了コード 2 で止めます。止められたコマンドは実行されず、理由が subagent に伝わります。
+
+> [!NOTE]
+> subagent のフロントマターに書いたフックは、Claude Code でそのフォルダーを信頼したあとに使われます（[第 1 章](01-setup.md#a14-初めて起動する)）。
+
 ### subagent に任せる
 
 subagent は、名前を出して頼みます。
@@ -173,6 +192,7 @@ cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/skil
 
 1. `.claude/agents/test-reviewer.md` を作ります。次のことを入れてください。
    - `tools` は `Read, Grep, Glob, Bash` にし、本文で「ファイルは変更しない」「Bash は `git diff` などの読み取りと、テストの実行にだけ使う」と書く
+   - A4.3 の `hooks` を書き、読み取りだけのコマンドしか実行できないようにする。フックのスクリプトは、完成例からコピーします（`cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/hooks/. .claude/hooks/`）
    - レビューの観点: テストが振る舞いを確かめているか、決まった値を返すだけの実装でも通ってしまわないか、テストが消されたり弱められたりしていないか
    - 問題があるものだけを、重要な順に報告する
 2. Claude Code を再起動し（`/exit` してから `claude`）、次のように頼みます。今はテストを追加していないので、「問題は見つかりませんでした」のような答えになれば、正しく動いています。
@@ -187,7 +207,7 @@ cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/skil
 <summary>解答例</summary>
 
 ```bash
-git add .claude/skills .claude/agents
+git add .claude/skills .claude/agents .claude/hooks
 git commit -m "chore: TDD 用の skill とテストレビュー用の subagent を追加"
 git push -u origin chore/tdd-skills
 gh pr create --title "TDD 用の skill とテストレビュー用の subagent を追加" --body "第 6 章の TDD で使う /tdd-todo、/tdd-go と、test-reviewer を追加します。"

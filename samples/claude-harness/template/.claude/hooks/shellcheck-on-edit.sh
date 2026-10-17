@@ -13,26 +13,27 @@
 #
 # 環境変数 SHELLCHECK で、使う shellcheck のパスを変えられます（テスト用）。
 
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=lib/json.sh
+source "$(dirname "$0")/lib/json.sh"
+
 set -uo pipefail
 
 SHELLCHECK="${SHELLCHECK:-shellcheck}"
 
-# 標準入力で渡される JSON から、編集したファイルのパス（tool_input.file_path）を取り出す。
+# 標準入力で渡される JSON から、編集したファイルのパス（tool_input.file_path）を取り出す
 #   例: {"tool_name":"Edit","tool_input":{"file_path":"/home/hanako/todo-cli-practice/todo.sh",...},...}
-# jq は macOS に入っていないことがあるので、grep と sed で最初に見つかった file_path を使う
-input=$(cat)
-file=$(printf '%s\n' "$input" |
-  grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' |
-  head -n 1 |
-  sed 's/^"file_path"[[:space:]]*:[[:space:]]*"\(.*\)"$/\1/')
+file=$(json_string_field file_path)
 
-# シェルスクリプト以外と、存在しないファイルは対象外
+# シェルスクリプト以外は対象外
 case "$file" in
   *.sh) ;;
   *) exit 0 ;;
 esac
+
 if [ ! -f "$file" ]; then
-  exit 0
+  echo "編集したファイルが見つからないため、shellcheck を実行できませんでした: ${file}" >&2
+  exit 1
 fi
 
 if ! command -v "$SHELLCHECK" >/dev/null 2>&1; then
@@ -41,7 +42,8 @@ if ! command -v "$SHELLCHECK" >/dev/null 2>&1; then
 fi
 
 # 「shellcheck」の終了コード: 0 = 警告なし、1 = 警告あり、それ以外 = 実行できなかった
-output=$("$SHELLCHECK" --color=never "$file" 2>&1)
+# -x: source で読み込んでいるファイルもたどってチェックする
+output=$("$SHELLCHECK" --color=never -x "$file" 2>&1)
 status=$?
 case "$status" in
   0)

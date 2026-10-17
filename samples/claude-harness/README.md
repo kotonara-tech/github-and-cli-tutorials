@@ -14,7 +14,9 @@ claude-harness/
 │   └── .claude/
 │       ├── settings.json              # 権限の設定とフック（第 5 章）
 │       ├── hooks/
-│       │   └── shellcheck-on-edit.sh  # .sh を編集したら shellcheck を実行するフック（第 5 章）
+│       │   ├── shellcheck-on-edit.sh  # .sh を編集したら shellcheck を実行するフック（第 5 章）
+│       │   ├── readonly-bash.sh       # test-reviewer に読み取りだけのコマンドを実行させるフック（第 4 章）
+│       │   └── lib/json.sh            # フックが受け取る JSON から値を取り出す関数
 │       ├── skills/
 │       │   ├── tdd-todo/SKILL.md      # /tdd-todo: テストリスト（TODO.md）を作る（第 4 章）
 │       │   └── tdd-go/SKILL.md        # /tdd-go: TDD の 1 サイクルを回す（第 4 章）

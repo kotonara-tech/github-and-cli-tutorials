@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 #
-# template/.claude/hooks/shellcheck-on-edit.sh のテスト
+# template/.claude/hooks/ のフックのスクリプトのテスト
 #
 # 実行方法（リポジトリのルートで）:
 #   bash samples/claude-harness/tests/test_hooks.sh
 #
-# Claude Code が PostToolUse フックに渡すのと同じ形の JSON を標準入力に渡し、
+# Claude Code がフックに渡すのと同じ形の JSON を標準入力に渡し、
 # 終了コードと標準エラー出力を確かめます。shellcheck が必要です。
+#
+# assert_equal などの関数は samples/todo-cli/tests/test_todo.sh と同じものです。
+# それぞれのテストを 1 つのファイルだけで読めるように、あえて共通化していません。
 
 set -uo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-HOOK="${SCRIPT_DIR}/../template/.claude/hooks/shellcheck-on-edit.sh"
+HOOKS_DIR="${SCRIPT_DIR}/../template/.claude/hooks"
+EDIT_HOOK="${HOOKS_DIR}/shellcheck-on-edit.sh"
+READONLY_HOOK="${HOOKS_DIR}/readonly-bash.sh"
 
 PASSED=0
 FAILED=0
@@ -21,16 +26,29 @@ WORK_DIR=$(mktemp -d)
 trap 'rm -rf "$WORK_DIR"' EXIT
 
 # フックを実行し、標準エラー出力を ERR、終了コードを STATUS に保存する
-#   run_hook <標準入力に渡す JSON>
+#   run_hook <フックのスクリプト> <標準入力に渡す JSON>
+# 環境変数を変えたいときは、SHELLCHECK=... run_hook ... のように前に書く
 run_hook() {
-  ERR=$(printf '%s' "$1" | bash "$HOOK" 2>&1 >/dev/null)
+  ERR=$(printf '%s' "$2" | bash "$1" 2>&1 >/dev/null)
   STATUS=$?
 }
 
-# Edit ツールの入力を表す JSON を作る
+# Edit ツールの入力を表す JSON を作る（パスの \ と " は JSON のエスケープにする）
 #   edit_json <ファイルのパス>
 edit_json() {
-  printf '{"tool_name":"Edit","tool_input":{"file_path":"%s","old_string":"a","new_string":"b"},"tool_response":{"filePath":"%s"}}' "$1" "$1"
+  local path="$1"
+  path=${path//\\/\\\\}
+  path=${path//\"/\\\"}
+  printf '{"tool_name":"Edit","tool_input":{"file_path":"%s","old_string":"a","new_string":"b"},"tool_response":{"filePath":"%s"}}' "$path" "$path"
+}
+
+# Bash ツールの入力を表す JSON を作る
+#   bash_json <コマンド>
+bash_json() {
+  local command="$1"
+  command=${command//\\/\\\\}
+  command=${command//\"/\\\"}
+  printf '{"tool_name":"Bash","tool_input":{"command":"%s","description":"テスト用"}}' "$command"
 }
 
 pass() {
@@ -73,48 +91,69 @@ cat >"${WORK_DIR}/bad.sh" <<'SCRIPT'
 cd /tmp
 echo "hello"
 SCRIPT
+cp "${WORK_DIR}/bad.sh" "${WORK_DIR}/a b\\c.sh"
 echo "# メモ" >"${WORK_DIR}/notes.md"
 
 # ---------------------------------------------------------------------------
-# 対象外のファイル
+# 編集のフック（shellcheck-on-edit.sh）: 対象外のファイル
 # ---------------------------------------------------------------------------
 
-run_hook "$(edit_json "${WORK_DIR}/notes.md")"
+run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/notes.md")"
 assert_equal ".sh 以外のファイルは終了コード 0 で終わる" 0 "$STATUS"
 assert_equal ".sh 以外のファイルは何も表示しない" "" "$ERR"
 
-run_hook "$(edit_json "${WORK_DIR}/missing.sh")"
-assert_equal "存在しないファイルは終了コード 0 で終わる" 0 "$STATUS"
-
-run_hook '{"tool_name":"Bash","tool_input":{"command":"ls"}}'
+run_hook "$EDIT_HOOK" '{"tool_name":"Bash","tool_input":{"command":"ls"}}'
 assert_equal "file_path がない入力は終了コード 0 で終わる" 0 "$STATUS"
 
+run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/missing.sh")"
+assert_equal "見つからない .sh は終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
+assert_contains "見つからない .sh はその旨を表示する" "見つからない" "$ERR"
+
 # ---------------------------------------------------------------------------
-# シェルスクリプト
+# 編集のフック（shellcheck-on-edit.sh）: シェルスクリプト
 # ---------------------------------------------------------------------------
 
-run_hook "$(edit_json "${WORK_DIR}/good.sh")"
+run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/good.sh")"
 assert_equal "警告のないスクリプトは終了コード 0 で終わる" 0 "$STATUS"
 assert_equal "警告のないスクリプトは何も表示しない" "" "$ERR"
 
-run_hook "$(edit_json "${WORK_DIR}/bad.sh")"
+run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/bad.sh")"
 assert_equal "警告のあるスクリプトは終了コード 2 で終わる（Claude に伝える）" 2 "$STATUS"
 assert_contains "警告のあるスクリプトはファイル名を表示する" "bad.sh に警告" "$ERR"
 assert_contains "警告のあるスクリプトは shellcheck の警告番号を表示する" "SC2164" "$ERR"
 
+run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/a b\\c.sh")"
+assert_equal "空白や \\ を含むパス（JSON のエスケープ）も正しく読み取る" 2 "$STATUS"
+
 # Write ツールで、内容に "file_path" という文字列を含むファイルを作った場合も、
 # 最初の file_path（作ったファイル）をチェックする
-run_hook "$(printf '{"tool_name":"Write","tool_input":{"file_path":"%s","content":"echo \\"file_path\\": \\"x.md\\""}}' "${WORK_DIR}/bad.sh")"
+run_hook "$EDIT_HOOK" "$(printf '{"tool_name":"Write","tool_input":{"file_path":"%s","content":"echo \\"file_path\\": \\"x.md\\""}}' "${WORK_DIR}/bad.sh")"
 assert_equal "Write の入力でも最初の file_path をチェックする" 2 "$STATUS"
 
-# ---------------------------------------------------------------------------
-# 「shellcheck」コマンドが見つからない場合
-# ---------------------------------------------------------------------------
-
-ERR=$(edit_json "${WORK_DIR}/good.sh" | SHELLCHECK="${WORK_DIR}/no-such-shellcheck" bash "$HOOK" 2>&1 >/dev/null)
-STATUS=$?
+SHELLCHECK="${WORK_DIR}/no-such-shellcheck" run_hook "$EDIT_HOOK" "$(edit_json "${WORK_DIR}/good.sh")"
 assert_equal "shellcheck がないときは終了コード 1 で終わる（あなたに通知する）" 1 "$STATUS"
 assert_contains "shellcheck がないときはその旨を表示する" "shellcheck が見つからない" "$ERR"
+
+# ---------------------------------------------------------------------------
+# readonly-bash.sh: 読み取りだけのコマンドは実行してよい
+# ---------------------------------------------------------------------------
+
+for command in "git diff main...HEAD -- tests/" "git log --oneline -5" 'git log --format="%h %s"' "git show HEAD" "git status" "bash tests/test_todo.sh"; do
+  run_hook "$READONLY_HOOK" "$(bash_json "$command")"
+  assert_equal "読み取りだけのコマンドは実行してよい: ${command}" 0 "$STATUS"
+done
+
+# ---------------------------------------------------------------------------
+# readonly-bash.sh: それ以外のコマンドは止める
+# ---------------------------------------------------------------------------
+
+for command in "git commit -m x" "git checkout -- tests/" "sed -i s/a/b/ todo.sh" "git diff > out.txt" "git diff; rm -rf tests" "git log | tee out.txt" "git log \$(touch x)" "git diff --output=out.txt" "rm -rf tests"; do
+  run_hook "$READONLY_HOOK" "$(bash_json "$command")"
+  assert_equal "読み取り以外のコマンドは止める（終了コード 2）: ${command}" 2 "$STATUS"
+done
+
+run_hook "$READONLY_HOOK" "$(bash_json "git commit -m x")"
+assert_contains "止めたときは理由を Claude に伝える" "test-reviewer が実行できるのは" "$ERR"
 
 # ---------------------------------------------------------------------------
 # 結果

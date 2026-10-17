@@ -101,8 +101,10 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
       "Bash(gh pr *)"
     ],
     "deny": [
-      "Bash(git push --force *)",
-      "Bash(git push -f *)",
+      "Bash(git push *--force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * +*)",
       "Read(./.env)"
     ]
   }
@@ -113,9 +115,11 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
 | --- | --- |
 | `allow` | 確認なしで許可する。テストの実行、shellcheck、コミットまでは任せる |
 | `ask` | どのモードでも、必ず確認する。GitHub に送る操作（push、Pull Request）は、自分で内容を見てから行う |
-| `deny` | どのモードでも拒否する。強制 push（[本編の第 8 章](../08-troubleshooting.md)）と、秘密の情報を書くファイル（`.env`）の読み取りを禁止する |
+| `deny` | どのモードでも拒否する。強制 push（`--force`、`--force-with-lease`、`-f`、`+ブランチ名` の書き方）と、秘密の情報を書くファイル（`.env`）の読み取りを禁止する |
 
 - `Bash(git add *)` の `*` は「何が続いてもよい」という意味です。`Bash(git add *)` は `git add todo.sh` にも `git add`（引数なし）にも当てはまります。
+- `*` は途中にも書けます。`Bash(git push *--force*)` は、`git push --force` にも `git push origin main --force-with-lease` にも当てはまります。
+- ただし、コマンドの引数の書き方はいくらでも変えられるので、このようなルールで **すべての書き方を確実に防ぐことはできません**（公式ドキュメントにも明記されています）。この設定では、`git push` はすべて `ask` で確認されるので、確認のときに内容を必ず読みます。`main` ブランチへの強制 push を確実に防ぐには、GitHub の **ブランチの保護**（[本編の第 7 章](../07-github-flow.md#ブランチを保護する任意)）を組み合わせます。
 - `git status`、`git diff`、`git log` などの読み取りだけのコマンドは、最初から確認なしで実行されます。
 - `$schema` の行があると、VS Code がこのファイルの書き方をチェックし、入力の候補を表示してくれます。
 - `/permissions` で、今効いているルールを確認・追加・削除できます。
@@ -147,8 +151,7 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
         "hooks": [
           {
             "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/shellcheck-on-edit.sh"]
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/shellcheck-on-edit.sh\""
           }
         ]
       }
@@ -158,8 +161,9 @@ VS Code の拡張機能（[第 1 章](01-setup.md#a16-vs-code-の拡張機能で
 ```
 
 - `matcher` の `Edit|Write` は「ファイルの編集（Edit）または作成（Write）のツールを使ったとき」という意味です。
-- `${CLAUDE_PROJECT_DIR}` は、リポジトリのルートのパスに置き換わります。
-- 実行するスクリプト [shellcheck-on-edit.sh](../../samples/claude-harness/template/.claude/hooks/shellcheck-on-edit.sh) は、Claude Code から受け取った情報（JSON）から編集したファイルのパスを取り出し、`.sh` のファイルなら shellcheck でチェックします。
+- `command` は、シェルで実行するコマンドです。`$CLAUDE_PROJECT_DIR` は、リポジトリのルートのパスが入った環境変数です。パスに空白が含まれていても動くように、`\"`（JSON の中のダブルクォート）で囲んでいます。
+- `bash` で実行するので、スクリプトに実行の権限（`chmod +x`）がなくても動きます。
+- 実行するスクリプト [shellcheck-on-edit.sh](../../samples/claude-harness/template/.claude/hooks/shellcheck-on-edit.sh) は、Claude Code から受け取った情報（JSON）から編集したファイルのパスを取り出し、`.sh` のファイルなら shellcheck でチェックします。JSON から値を取り出す処理は、[lib/json.sh](../../samples/claude-harness/template/.claude/hooks/lib/json.sh) にまとめています。
 
 フックのスクリプトは、**終了コード** で結果を伝えます。
 
@@ -275,12 +279,12 @@ cd /tmp
    code --diff ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/settings.json .claude/settings.json
    ```
 
-   ないときは、フックのスクリプトとあわせてコピーします（`-i` を付けると、上書きする前に確認されます）。
+   ないときは、フックのスクリプト（`.claude/hooks/` の中のすべて）とあわせてコピーします（`-i` を付けると、上書きする前に確認されます）。
 
    ```bash
    mkdir -p .claude/hooks
    cp -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/settings.json .claude/
-   cp -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/hooks/shellcheck-on-edit.sh .claude/hooks/
+   cp -R -i ~/github-and-cli-tutorials/samples/claude-harness/template/.claude/hooks/. .claude/hooks/
    ```
 
 3. `.claude/settings.json` を VS Code で開き、A5.4 と A5.5 の説明と照らして、それぞれの行が何をするのかを確かめます。
@@ -315,7 +319,7 @@ rm scratch.sh
 <summary>解答例</summary>
 
 ```bash
-git add .claude/settings.json .claude/hooks/shellcheck-on-edit.sh README.md
+git add .claude/settings.json .claude/hooks README.md
 git commit -m "chore: Claude Code の権限の設定と shellcheck のフックを追加"
 git push -u origin chore/claude-harness
 gh pr create --title "Claude Code の権限の設定と shellcheck のフックを追加" --body "テストと shellcheck の実行を許可し、push と強制 push を制限します。シェルスクリプトを編集したら、フックで shellcheck を自動で実行します。"

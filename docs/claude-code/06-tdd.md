@@ -124,6 +124,8 @@ $ ./todo.sh stats extra
    CLAUDE.md
    .claude/settings.json
    .claude/hooks/shellcheck-on-edit.sh
+   .claude/hooks/readonly-bash.sh
+   .claude/hooks/lib/json.sh
    .claude/skills/tdd-todo/SKILL.md
    .claude/skills/tdd-go/SKILL.md
    .claude/agents/test-reviewer.md
@@ -397,7 +399,8 @@ FAIL - stats の完了率は小数点以下を切り捨てる
        実際  : 全 3 件（未完了 1 件 / 完了 2 件） 完了率 67%
 ```
 
-確かめたら実装を元に戻し、テストの追加だけを `test:` のコミットにします。`/tdd-go` は、最初から成功したときにそのことを報告するように書いてあります。報告を見たら、Claude に「実装を一時的に壊して、テストが失敗することを確かめて」と頼みましょう。
+確かめたら実装を元に戻し、テストの追加だけを `test:` のコミットにします。
+`/tdd-go` は、テストが最初から成功したときは、Green と Refactor を飛ばして、このように実装を一時的に壊して確かめ、テストの追加だけを `test:` でコミットするように書いてあります。報告に、壊して確かめたときの失敗の出力が含まれていることを確認しましょう。
 
 ## A6.9 ステップ 5: テストをレビューする
 
@@ -489,7 +492,7 @@ b4efbc5 feat: stats で未完了のタスクを数える
 
 > [!WARNING]
 > 続けて回すと、1 サイクルずつ見ていたときより、確認が甘くなりがちです。
-> [第 5 章](05-harness.md) の `ask` と `deny` の設定（push は確認する、強制 push は禁止）があることを確かめてから始め、終わった後の確認は、自分の目で必ず行ってください。
+> [第 5 章](05-harness.md) の `ask` と `deny` の設定（push は確認する、代表的な強制 push の書き方は拒否する）があることを確かめてから始め、終わった後の確認は、自分の目で必ず行ってください。
 
 ## 解答例
 

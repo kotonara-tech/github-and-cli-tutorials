@@ -13,8 +13,10 @@
       "Bash(gh pr *)"
     ],
     "deny": [
-      "Bash(git push --force *)",
-      "Bash(git push -f *)",
+      "Bash(git push *--force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * +*)",
       "Read(./.env)"
     ]
   },
@@ -25,8 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash",
-            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/shellcheck-on-edit.sh"]
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/shellcheck-on-edit.sh\""
           }
         ]
       }

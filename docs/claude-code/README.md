@@ -59,7 +59,7 @@ flowchart LR
 | [第 5 章: ハーネスを整える](05-harness.md) | 権限モード（Manual / plan / auto）、権限の設定、フック、`/goal` と `/loop` による検証ループ | 60〜90 分 |
 | [第 6 章: 追加課題: t-wada 流 TDD で stats コマンドを作る](06-tdd.md) | テストリスト、Red → Green → Refactor、仮実装と三角測量、レビュー、Pull Request | 90〜180 分 |
 
-合計で **5〜9 時間** 程度です。
+合計で **5.5〜9 時間** 程度です。
 
 ## 困ったときは
 
