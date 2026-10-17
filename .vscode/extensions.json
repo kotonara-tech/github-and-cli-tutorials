@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "MS-CEINTL.vscode-language-pack-ja",
+    "EditorConfig.EditorConfig",
+    "DavidAnson.vscode-markdownlint",
+    "timonwong.shellcheck"
+  ]
+}

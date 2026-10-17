@@ -3,8 +3,16 @@ todo.txt
 todo.txt.*
 
 # エディタや OS が作るファイル
+# （VS Code の設定のうち、みんなで使う推奨拡張機能・設定・タスクだけはリポジトリに含める）
 .DS_Store
 *.swp
 *~
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
 .idea/
+
+# Claude Code の、自分だけの設定とメモ（発展編）
+.claude/settings.local.json
+CLAUDE.local.md
