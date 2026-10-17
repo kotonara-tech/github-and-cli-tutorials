@@ -32,7 +32,7 @@ disable-model-invocation: true
 ## コミットの前に確かめること
 
 - `TODO.md` のその項目を `- [x]` にする（Green のコミット、または `test:` のコミットに含める）。作業中に気づいたことは、新しい項目として `TODO.md` に追加する
-- `bash tests/test_todo.sh` と `shellcheck todo.sh tests/*.sh` を実行し、どちらも成功することを確かめる
+- `bash tests/test_todo.sh` と `shellcheck todo.sh tests/test_todo.sh` を実行し、どちらも成功することを確かめる
 
 ## 4. 報告して止まる
 

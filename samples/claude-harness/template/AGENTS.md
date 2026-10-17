@@ -10,7 +10,7 @@
 ## コマンド
 
 - テスト: `bash tests/test_todo.sh`（最後の行が `結果: N 件成功, 0 件失敗` なら成功）
-- 静的解析: `shellcheck todo.sh tests/*.sh`
+- 静的解析: `shellcheck todo.sh tests/test_todo.sh`
 - コードを変更したら、コミットの前に必ず両方を実行する
 
 ## コードの決まり

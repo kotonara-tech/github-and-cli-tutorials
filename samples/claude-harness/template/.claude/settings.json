@@ -3,7 +3,7 @@
   "permissions": {
     "allow": [
       "Bash(bash tests/test_todo.sh)",
-      "Bash(shellcheck todo.sh tests/*.sh)",
+      "Bash(shellcheck todo.sh tests/test_todo.sh)",
       "Bash(./todo.sh *)",
       "Bash(git add *)",
       "Bash(git commit *)"

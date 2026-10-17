@@ -217,7 +217,7 @@ done
 # リポジトリの外を指すパス（git diff は、外のパスを渡すと自動で --no-index と同じ動きになる）
 for command in "git diff /dev/null /etc/hostname" "git diff -- ../outside.txt" "git show HEAD -- ~/.ssh/id_rsa" "git diff -- tests/../../x" \
   "git diff ./.. ." "git diff .//.. ." "git diff -- tests/.." "git show HEAD:.." "git diff =ls =cat" \
-  "git diff C:/Users/me/.ssh/id_rsa C:/x"; do
+  "git diff C:/Users/me/.ssh/id_rsa C:/x" "git diff C:Users/me/.ssh/id_rsa C:x"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal "リポジトリの外を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
 done
