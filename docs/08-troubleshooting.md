@@ -446,7 +446,6 @@ todo.sh: Bourne-Again shell script, Unicode text, UTF-8 text executable, with CR
 
 - `.gitattributes` の `* text=auto eol=lf`: Git がファイルを書き出すときに、改行コードを `LF` にします。
 - `.editorconfig` の `end_of_line = lf`: EditorConfig 拡張機能が、保存するときに改行コードを `LF` にします。
-- `.vscode/settings.json` の `"files.eol": "\n"`: VS Code で新しく作るファイルの改行コードを `LF` にします。
 
 Windows では、VS Code が WSL2 に接続されていることも確認してください（[ターミナルが PowerShell や cmd になる](#ターミナルが-powershell-や-cmd-になるwsl2-に接続されていない)）。
 

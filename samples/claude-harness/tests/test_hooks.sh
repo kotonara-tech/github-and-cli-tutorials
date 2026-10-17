@@ -150,10 +150,12 @@ assert_equal "lib/json.sh がないときは終了コード 1 で終わる（あ
 assert_contains "lib/json.sh がないときはその旨を表示する" "lib/json.sh が見つからない" "$ERR"
 
 # ---------------------------------------------------------------------------
-# readonly-bash.sh: 読み取りだけのコマンドは実行してよい
+# readonly-bash.sh: 決まった形の読み取りだけのコマンドは実行してよい
 # ---------------------------------------------------------------------------
 
-for command in "git diff main...HEAD -- tests/" "git log --oneline -5" 'git log --format="%h %s"' "git show HEAD" "git status" "bash tests/test_todo.sh"; do
+for command in "git diff main...HEAD -- tests/" "git diff --stat main...HEAD" "git log --oneline -5" \
+  "git log -n3 --oneline -- tests/test_todo.sh" "git show HEAD" "git show HEAD~1 --stat" "git status" "git status --short" \
+  "bash tests/test_todo.sh"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal "読み取りだけのコマンドは実行してよい: ${command}" 0 "$STATUS"
 done
@@ -162,13 +164,30 @@ done
 # readonly-bash.sh: それ以外のコマンドは止める
 # ---------------------------------------------------------------------------
 
-for command in "git commit -m x" "git checkout -- tests/" "sed -i s/a/b/ todo.sh" "rm -rf tests" \
+# 読み取り以外のコマンドと、複数のコマンドをつなぐ書き方
+for command in "git commit -m x" "git checkout -- tests/" "sed -i s/a/b/ todo.sh" "rm -rf tests" "git" "gitdiff" \
   "git diff > out.txt" "git diff; rm -rf tests" "git diff && rm -rf tests" "git log | tee out.txt" \
-  "git log \$(touch x)" "git log \`touch x\`" "git log -1"$'\n'"rm -rf tests" \
-  "git diff --output=out.txt" "git diff --ext-diff" "git log -p --textconv" "git diff --no-index /dev/null .env"; do
+  "git log \$(touch x)" "git log \`touch x\`" "git log -1"$'\n'"rm -rf tests"; do
   run_hook "$READONLY_HOOK" "$(bash_json "$command")"
   assert_equal "読み取り以外のコマンドは止める（終了コード 2）: ${command//$'\n'/\\n}" 2 "$STATUS"
 done
+
+# 引用符や \ で書き方を変えたオプション、一覧にないオプション、ファイル名の展開
+for command in "git diff --out''put=todo.sh HEAD~1" "git diff --ext''-diff" "git diff --no-ind\\ex /dev/null .env" \
+  "git diff --output=out.txt" "git diff --ext-diff" "git log -p --textconv" "git diff --no-index a b" \
+  'git log --format="%h %s"' "git diff {a,b}" "git diff HEAD -- *.sh" "git -c core.pager=less diff"; do
+  run_hook "$READONLY_HOOK" "$(bash_json "$command")"
+  assert_equal "一覧にない書き方やオプションは止める（終了コード 2）: ${command}" 2 "$STATUS"
+done
+
+# リポジトリの外を指すパス（git diff は、外のパスを渡すと自動で --no-index と同じ動きになる）
+for command in "git diff /dev/null /etc/hostname" "git diff -- ../outside.txt" "git show HEAD -- ~/.ssh/id_rsa" "git diff -- tests/../../x"; do
+  run_hook "$READONLY_HOOK" "$(bash_json "$command")"
+  assert_equal "リポジトリの外を指すパスは止める（終了コード 2）: ${command}" 2 "$STATUS"
+done
+
+run_hook "$READONLY_HOOK" "$(bash_json "git commit -m x")"
+assert_contains "止めたときは理由を Claude に伝える" "test-reviewer が実行できるのは" "$ERR"
 
 run_hook "$READONLY_HOOK" '{"tool_name":"Bash","tool_input":{"description":"command がない"}}'
 assert_equal "command が取り出せないときは止める（終了コード 2）" 2 "$STATUS"

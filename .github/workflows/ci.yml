@@ -22,7 +22,7 @@ jobs:
         run: npx --yes markdownlint-cli2@0.18.1
 
   shell:
-    name: シェルスクリプトのチェックとテスト
+    name: シェルスクリプトと設定ファイルのチェック・テスト
     runs-on: ubuntu-latest
     steps:
       - name: リポジトリのコードを取得する
@@ -40,13 +40,11 @@ jobs:
       - name: Claude Code のフックのテストを実行する
         run: bash samples/claude-harness/tests/test_hooks.sh
 
-  json:
-    name: JSON の書式チェック
-    runs-on: ubuntu-latest
-    steps:
-      - name: リポジトリのコードを取得する
-        uses: actions/checkout@v5
-
       # .vscode/ の JSON は、コメントを書ける形式（JSONC）なので対象外にする（VS Code が編集中にチェックする）
       - name: JSON ファイル（Claude Code の設定など）を検証する
-        run: git ls-files -z '*.json' ':!:.vscode/**' ':!:**/.vscode/**' | xargs -0 -r -n 1 python3 -m json.tool >/dev/null
+        run: |
+          status=0
+          for file in $(git ls-files '*.json' ':!:.vscode/**' ':!:**/.vscode/**'); do
+            python3 -m json.tool "$file" >/dev/null || { echo "JSON の書式が正しくありません: $file"; status=1; }
+          done
+          exit "$status"

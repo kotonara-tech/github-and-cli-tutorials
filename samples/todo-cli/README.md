@@ -61,7 +61,6 @@ todo-cli/
 │   └── workflows/test.yml       # Pull Request ごとにテストを自動実行する設定
 ├── .vscode/
 │   ├── extensions.json          # おすすめの VS Code の拡張機能
-│   ├── settings.json            # このリポジトリで使う VS Code の設定（改行コードなど）
 │   └── tasks.json               # VS Code のタスク（テストの実行）
 ├── .editorconfig                # エディタの設定（改行コード、インデント）
 ├── .gitattributes               # Git が扱う改行コードの設定

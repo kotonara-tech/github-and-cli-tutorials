@@ -7,13 +7,12 @@ samples/cli-practice/ip-ranking.txt
 samples/cli-practice/practice/
 
 # エディタや OS が作るファイル
-# （VS Code の設定のうち、みんなで使う推奨拡張機能と設定だけはリポジトリに含める）
+# （VS Code の設定のうち、みんなで使う推奨拡張機能だけはリポジトリに含める）
 .DS_Store
 *.swp
 *~
 **/.vscode/*
 !/.vscode/extensions.json
-!/.vscode/settings.json
 .idea/
 
 # markdownlint などを手元で実行したときのファイル

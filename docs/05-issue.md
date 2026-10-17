@@ -104,7 +104,6 @@ code ~/git-practice/todo-cli-practice
 | ファイル | 内容 |
 | --- | --- |
 | `.vscode/extensions.json` | おすすめの拡張機能の一覧（GitHub Pull Requests、ShellCheck、EditorConfig） |
-| `.vscode/settings.json` | このリポジトリだけに効く VS Code の設定（改行コードを `LF` にする、ファイルの最後に改行を入れる、行末の空白を消す） |
 | `.vscode/tasks.json` | テストを実行する **タスク**（[第 6 章](06-pull-request.md) で使います） |
 | `.editorconfig` | 改行コードやインデントの決まり。EditorConfig 拡張機能が読み込み、VS Code 以外のエディタでも使われます |
 | `.gitattributes` | Git がファイルを扱うときの改行コードを `LF` にそろえる設定 |

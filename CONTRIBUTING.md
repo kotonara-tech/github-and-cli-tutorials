@@ -67,7 +67,7 @@ bash samples/claude-harness/tests/test_hooks.sh
 
 # JSON ファイル（Claude Code の設定など）の書式チェック
 # （.vscode/ の JSON はコメントを書ける形式（JSONC）なので対象外）
-git ls-files -z '*.json' ':!:.vscode/**' ':!:**/.vscode/**' | xargs -0 -r -n 1 python3 -m json.tool >/dev/null
+for file in $(git ls-files '*.json' ':!:.vscode/**' ':!:**/.vscode/**'); do python3 -m json.tool "$file" >/dev/null || echo "JSON の書式が正しくありません: $file"; done
 ```
 
 `shellcheck` は、macOS なら `brew install shellcheck`、Ubuntu なら `sudo apt install shellcheck` でインストールできます。

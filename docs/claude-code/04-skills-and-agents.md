@@ -123,6 +123,7 @@ hooks:
 ```
 
 [readonly-bash.sh](../../samples/claude-harness/template/.claude/hooks/readonly-bash.sh) は、`git diff` / `git log` / `git show` / `git status` と `bash tests/test_todo.sh` 以外のコマンドを、終了コード 2 で止めます。止められたコマンドは実行されず、理由が subagent に伝わります。
+「危ないコマンドを探して止める」のではなく、「安全だと分かっている書き方だけを通す」（**許可リスト**）考え方で作っています。引用符や `$` などの記号を使うと、同じコマンドをいくらでも違う書き方にできるので、使える文字、オプション、パスを決めて、それ以外はすべて止めます。
 
 > [!NOTE]
 > subagent のフロントマターに書いたフックは、Claude Code でそのフォルダーを信頼したあとに使われます（[第 1 章](01-setup.md#a14-初めて起動する)）。

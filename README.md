@@ -160,7 +160,7 @@ VS Code は毎週のように更新されるため、日本語になっていな
 ├── exercises/
 │   ├── README.md           # 演習の一覧
 │   └── scripts/            # 練習用環境（コンフリクト・チーム開発）を作るスクリプト
-├── .vscode/                # この教材を VS Code で開いたときの、おすすめの拡張機能と設定
+├── .vscode/                # この教材を VS Code で開いたときの、おすすめの拡張機能
 └── .github/
     ├── ISSUE_TEMPLATE/     # この教材への Issue のテンプレート
     ├── pull_request_template.md
