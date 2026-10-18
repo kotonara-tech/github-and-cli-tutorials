@@ -2,9 +2,20 @@
 todo.txt
 todo.txt.*
 
+# 秘密の情報（API キーなど）を書くファイル（コミットしない。発展編 第 5 章）
+.env
+.env.*
+
 # エディタや OS が作るファイル
+# （VS Code の設定のうち、みんなで使う推奨拡張機能とタスクだけはリポジトリに含める）
 .DS_Store
 *.swp
 *~
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/tasks.json
 .idea/
+
+# Claude Code の、自分だけの設定とメモ（発展編）
+.claude/settings.local.json
+CLAUDE.local.md

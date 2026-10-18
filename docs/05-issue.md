@@ -5,9 +5,9 @@
 
 ## この章のゴール
 
-- [ ] 練習用リポジトリ `todo-cli-practice` を GitHub に作れる
+- [ ] 練習用リポジトリ `todo-cli-practice` を GitHub に作り、VS Code で開ける
 - [ ] 他の人が読んで分かる Issue を書ける
-- [ ] ブラウザと `gh` コマンドの両方で Issue を作成・確認・更新できる
+- [ ] ブラウザ・`gh` コマンド・VS Code（GitHub Pull Requests 拡張機能）で Issue を作成・確認・更新できる
 - [ ] ラベルや担当者を設定できる
 - [ ] Issue テンプレートの仕組みを説明できる
 
@@ -33,7 +33,7 @@ Issue は「課題」「問題」という意味です。GitHub の Issue には
 第 5 章〜第 7 章では、サンプルの TODO アプリ [samples/todo-cli](../samples/todo-cli/) をコピーして、**あなた専用の練習用リポジトリ** を作り、その中で Issue や Pull Request を練習します。
 
 ```bash
-# 1. サンプルをコピーする（隠しファイルの .github/ や .gitignore もコピーされる）
+# 1. サンプルをコピーする（隠しファイルの .github/、.vscode/、.editorconfig、.gitattributes、.gitignore もコピーされる）
 mkdir -p ~/git-practice
 cp -r ~/github-and-cli-tutorials/samples/todo-cli ~/git-practice/todo-cli-practice
 cd ~/git-practice/todo-cli-practice
@@ -61,6 +61,54 @@ gh browse
 
 > [!NOTE]
 > リポジトリを `--public`（公開）で作ることもできます。公開リポジトリは誰でも見られますが、無料プランでも「ブランチの保護」機能（[第 7 章](07-github-flow.md)）が使えます。
+
+### 練習用リポジトリを VS Code で開く
+
+第 5 章〜第 7 章の作業は、この練習用リポジトリを VS Code で開いて行います。
+
+#### VS Code で操作する
+
+1. メニューの **ファイル**（File）> **フォルダーを開く...**（Open Folder...）を選びます。
+2. ホームディレクトリの `git-practice` の中の `todo-cli-practice` を選び、**開く** をクリックします。
+   Windows の場合は、[0.8](00-setup.md#教材のフォルダを開く) と同じように、先に WSL2 に接続してから選びます。
+
+#### コマンドで操作する
+
+統合ターミナルで、次のコマンドを実行します。新しいウィンドウで開きます。
+
+```bash
+code ~/git-practice/todo-cli-practice
+```
+
+### フォルダを信頼して、状態を確認する
+
+初めて開いたフォルダは **制限モード**（Restricted Mode）で開きます。[0.8](00-setup.md#フォルダを信頼する制限モードを解除する) の手順で信頼してください。
+`~/git-practice` を **信頼済みフォルダーとワークスペース** に追加してある場合は、最初から信頼された状態で開くので、この手順は要りません。
+
+開いたら、次の点を確認しましょう。
+
+- ステータス バーの左下に、今のブランチ名 `main` が表示されている
+- **ソース管理**（Source Control）ビュー（<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>、macOS は <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>）の **変更**（Changes）に、ファイルが 1 つも表示されていない（すべてコミット済み）
+- メニューの **ターミナル**（Terminal）> **新しいターミナル**（New Terminal）で開いた統合ターミナルで `pwd` を実行すると、練習用リポジトリの場所が表示される
+
+この章の `gh` コマンドは、この統合ターミナルで実行します。
+
+### おすすめの拡張機能をインストールする
+
+練習用リポジトリを開くと、右下に「このリポジトリ 用のおすすめ拡張機能 … をインストールしますか?」という通知が表示されることがあります。
+**インストール**（Install）をクリックすると、このリポジトリで使う拡張機能がまとめてインストールされます。**推奨事項の表示**（Show Recommendations）をクリックすると、一覧を確認してから選べます。
+[0.9](00-setup.md#09-拡張機能を追加する) ですべてインストールしてある場合は、通知は表示されません。
+
+おすすめの拡張機能は、コピーしてきた `.vscode/extensions.json` に書かれています。`.vscode/` には、このリポジトリで作業する人の全員で使う VS Code の設定が入っています。
+
+| ファイル | 内容 |
+| --- | --- |
+| `.vscode/extensions.json` | おすすめの拡張機能の一覧（GitHub Pull Requests、ShellCheck、EditorConfig） |
+| `.vscode/tasks.json` | テストを実行する **タスク**（[第 6 章](06-pull-request.md) で使います） |
+| `.editorconfig` | 改行コードやインデントの決まり。EditorConfig 拡張機能が読み込み、VS Code 以外のエディタでも使われます |
+| `.gitattributes` | Git がファイルを扱うときの改行コードを `LF` にそろえる設定 |
+
+Windows では改行コードが `CRLF` になると、シェルスクリプトが動かなくなります。これらのファイルは、それを防ぐためのものです（[第 8 章](08-troubleshooting.md#改行コードが-crlf-になる)）。
 
 ## 5.3 良い Issue の書き方
 
@@ -146,7 +194,7 @@ $ ./todo.sh list
 
 ## 5.5 gh コマンドで Issue を作る
 
-ターミナルから Issue を作ることもできます。`todo-cli` に「タスクを削除する機能」を追加する提案を作ってみましょう。
+統合ターミナルから、`gh` コマンドで Issue を作ることもできます。`todo-cli` に「タスクを削除する機能」を追加する提案を作ってみましょう。
 
 ```bash
 cd ~/git-practice/todo-cli-practice
@@ -182,9 +230,51 @@ EOF
 行末の `\` は「コマンドが次の行に続く」という意味です。
 
 オプションを付けずに `gh issue create` と実行すると、対話形式でタイトルやテンプレートを選びながら作成できます。
+本文を入力する場面では、[0.7](00-setup.md#github-cli-のエディタを-vs-code-にする) で設定したとおり、本文が VS Code のタブで開きます。書き終えたら保存し、タブを閉じる（<kbd>Ctrl</kbd> + <kbd>W</kbd>、macOS は <kbd>Command</kbd> + <kbd>W</kbd>）と、ターミナルで続きに進めます。
 `gh issue create --web` なら、入力済みの状態でブラウザの作成画面が開きます。
 
+VS Code の GitHub Pull Requests 拡張機能から Issue を作ることもできます（[5.6](#56-issue-を確認更新する) で説明します）。
+
 ## 5.6 Issue を確認・更新する
+
+作った Issue は、VS Code の GitHub Pull Requests 拡張機能でも、`gh` コマンドでも確認・更新できます（[公式ドキュメント: Working with GitHub](https://code.visualstudio.com/docs/sourcecontrol/github)）。
+
+### VS Code で操作する
+
+#### GitHub にサインインする
+
+GitHub Pull Requests 拡張機能（[0.9](00-setup.md#09-拡張機能を追加する) でインストール済み）を使うには、最初に一度だけサインインします。
+
+1. アクティビティ バーの **GitHub** を選びます。
+2. 「You have not yet signed in with GitHub」の下の **Sign in** をクリックします。
+3. 「拡張機能 'GitHub Pull Requests' が GitHub を使用してサインインしようとしています。」と表示されたら、**許可**（Allow）をクリックします。
+4. ブラウザが開くので、GitHub の画面で許可し、VS Code に戻ります。
+
+サインインすると、**GitHub** ビューに **Pull Requests**、**Issues**、**Notifications** の 3 つのセクションが表示されます。
+
+#### Issue の一覧を見る
+
+**Issues** のセクションには、今開いているリポジトリの Issue が、次のグループに分かれて表示されます。
+
+| グループ | 表示される Issue |
+| --- | --- |
+| **My Issues** | 自分が担当者（Assignee）になっている Open の Issue |
+| **Created Issues** | 自分が作った Open の Issue |
+| **Recent Issues** | 最近更新された Open の Issue |
+
+- Issue をクリックすると、エディターのタブに本文とコメントが表示されます。右側の **Assignees** や **Labels** で担当者やラベルを変更でき、下の入力欄に書いて **Comment** をクリックするとコメントできます。
+- Issue を右クリックして **Open Issue on GitHub** を選ぶと、ブラウザで開きます。
+
+#### Issue を作る
+
+[5.4](#54-ブラウザで-issue-を作る) や [5.5](#55-gh-コマンドで-issue-を作る) と同じように、VS Code からも Issue を作れます。
+
+1. **Issues** の見出しにマウスを合わせ、**+**（**Create an Issue**）をクリックします。コマンド パレット（<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>、macOS は <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>）で「**GitHub Issues: Create an Issue**」を実行しても同じです。
+2. テンプレートの一覧が表示されるので、「**バグ報告**」「**機能リクエスト**」「**Blank issue**」（テンプレートなし）から選びます。
+3. `NewIssue.md` というタブが開きます。1 行目がタイトル、`Assignees:` と `Labels:` の行が担当者とラベル、空行の後ろが本文です。テンプレートのタイトルと本文が入っているので、書き換えます。
+4. 書き終えたら、エディターの右上の ✓（**Create Issue**）をクリックします。
+
+### コマンドで操作する
 
 ```bash
 gh issue list                        # Open の Issue を一覧表示する
@@ -265,7 +355,7 @@ gh label create "priority: high" --color D93F0B --description "優先度が高�
 
 Issue を閉じる方法は 2 つあります。
 
-1. **手動で閉じる**: Issue の画面下部の「**Close issue**」ボタン（`▼` から理由を選べる）、または `gh issue close` を使います。
+1. **手動で閉じる**: Issue の画面下部の「**Close issue**」ボタン（`▼` から理由を選べる）、または `gh issue close` を使います。VS Code の GitHub Pull Requests 拡張機能では、Issue のタブの下部にある **Close Issue** をクリックします。
 
    ```bash
    gh issue close 5 --comment "修正が完了したため閉じます"
@@ -277,7 +367,7 @@ Issue を閉じる方法は 2 つあります。
 
 ## 5.10 Issue テンプレート
 
-練習用リポジトリの「**New issue**」でテンプレートを選べたのは、`.github/ISSUE_TEMPLATE/` にテンプレートのファイルがあるからです。
+練習用リポジトリの「**New issue**」や、VS Code の **Create an Issue** でテンプレートを選べたのは、`.github/ISSUE_TEMPLATE/` にテンプレートのファイルがあるからです。
 
 ```bash
 cat .github/ISSUE_TEMPLATE/bug_report.md
@@ -315,9 +405,9 @@ assignees: ""
 
 ### 演習 5-3: Issue を整理する
 
-[samples/todo-cli/README.md の「練習用の課題」](../samples/todo-cli/README.md#練習用の課題) から機能を 2 つ選び、それぞれ Issue を作成してください。その後、次の操作をしてください。
+[samples/todo-cli/README.md の「練習用の課題」](../samples/todo-cli/README.md#練習用の課題) から機能を 2 つ選び、それぞれ Issue を作成してください（ブラウザ・`gh` コマンド・VS Code のどれで作っても構いません）。その後、次の操作をしてください。
 
-1. `gh issue list` で一覧を表示する
+1. `gh issue list` で一覧を表示する（VS Code の **Issues** でも確認してみましょう）
 2. `priority: high` ラベルを作り、どれか 1 つの Issue に付ける
 3. `gh issue list --label "priority: high"` で絞り込む
 4. どれか 1 つの Issue に、どのように実装するかの方針をコメントする
@@ -332,9 +422,9 @@ gh issue create --title "[Feature] 完了を取り消す undone コマンドを�
   --label enhancement --assignee @me \
   --body "\`./todo.sh undone 1\` で、完了にしたタスクを未完了に戻したい。"
 
-gh issue create --title "[Feature] タスクの件数を表示する count コマンドを追加したい" \
+gh issue create --title "[Feature] 完了したタスクをまとめて削除する clear コマンドを追加したい" \
   --label enhancement --assignee @me \
-  --body "\`./todo.sh count\` で、未完了と完了の件数を表示したい。"
+  --body "\`./todo.sh clear\` で、完了したタスクをまとめて削除したい。"
 
 gh issue list
 gh label create "priority: high" --color D93F0B --description "優先度が高い"
@@ -352,7 +442,7 @@ gh issue comment 3 --body "done コマンドと同じように awk で [x] を [
 - Issue は「やるべきこと」を 1 件ずつ記録し、議論と経緯を残すための機能
 - 他の人が読んで分かるように、再現手順・期待する動作・完了の条件などを書く
 - ラベルで分類し、担当者を明確にする
-- `gh issue create / list / view / comment / edit / close` でターミナルから操作できる
+- `gh issue create / list / view / comment / edit / close` でターミナルから、GitHub Pull Requests 拡張機能で VS Code から操作できる
 - テンプレートは `.github/ISSUE_TEMPLATE/` に置く
 
 ---

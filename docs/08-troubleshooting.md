@@ -27,6 +27,13 @@ Git や GitHub を使っていてよくあるトラブルと、その対処方�
   - [コンフリクトが起きた](#コンフリクトが起きた)
   - [ブランチを削除できない（not fully merged）](#ブランチを削除できないnot-fully-merged)
   - [detached HEAD と表示される](#detached-head-と表示される)
+- [VS Code](#vs-code)
+  - [`code` コマンドが見つからない](#code-コマンドが見つからない)
+  - [`git commit` で VS Code が開いたのに、すぐにコミットが中止される](#git-commit-で-vs-code-が開いたのにすぐにコミットが中止される)
+  - [ターミナルが PowerShell や cmd になる（WSL2 に接続されていない）](#ターミナルが-powershell-や-cmd-になるwsl2-に接続されていない)
+  - [ソース管理ビューに何も表示されない](#ソース管理ビューに何も表示されない)
+  - [改行コードが CRLF になる](#改行コードが-crlf-になる)
+  - [スマート コミットで「常時」を選んでしまった](#スマート-コミットで常時を選んでしまった)
 - [そのほか](#そのほか)
   - [エディタ（vim）が開いて抜けられない](#エディタvimが開いて抜けられない)
   - [not a git repository と表示される](#not-a-git-repository-と表示される)
@@ -89,7 +96,7 @@ git revert 1d5c482               # そのコミットの変更を打ち消すコ
 git push
 ```
 
-エディタが開いたら、メッセージ（`Revert "..."`）を確認して保存し、閉じます。
+VS Code にメッセージ（`Revert "..."`）のタブが開くので、内容を確認して保存し、タブを閉じます（<kbd>Ctrl</kbd> + <kbd>W</kbd>、macOS は <kbd>Command</kbd> + <kbd>W</kbd>）。タブを閉じると、打ち消すコミットが作られます。
 
 > [!CAUTION]
 > `git reset` で履歴を巻き戻してから `git push --force` する方法もありますが、**他の人がすでに取り込んだコミットを消してしまう** 危険があります。共有しているブランチでは使わないでください。
@@ -233,12 +240,24 @@ CONFLICT (content): Merge conflict in profile.txt
 Automatic merge failed; fix conflicts and then commit the result.
 ```
 
+2 つのブランチで同じ場所が変更されていて、Git が自動でまとめられなかった状態です。どちらの内容を残すかを決めて解消します。詳しくは [第 4 章](04-branch.md#45-コンフリクト競合を解消する) を参照してください。
+
+#### VS Code で操作する
+
+1. **ソース管理** ビューの **変更のマージ**（Merge Changes）に表示されたファイルをクリックして開きます。
+2. コンフリクトしている部分の上に表示される **現在の変更を取り込む**（Accept Current Change）・**入力側の変更を取り込む**（Accept Incoming Change）・**両方の変更を取り込む**（Accept Both Changes）のどれかをクリックするか、直接書き換えます。
+   **マージ エディターで解決**（Resolve in Merge Editor）をクリックすると、3 つの画面に分かれたマージ エディターで解消することもできます（最後に **マージの完了**（Complete Merge）をクリックします）。
+3. 保存したら、ファイルの **変更をステージ**（**+**）をクリックします。
+4. メッセージ欄を確認して **コミット** をクリックします。
+
+#### コマンドで操作する
+
 1. `git status` で `both modified` のファイルを確認する
 2. ファイルを開き、`<<<<<<<`・`=======`・`>>>>>>>` の部分を正しい内容に書き換える（マーカーの行は消す）
 3. `git add <ファイル>`
-4. `git commit`
+4. `git commit`（VS Code にメッセージのタブが開くので、確認して保存し、タブを閉じる）
 
-詳しくは [第 4 章](04-branch.md#45-コンフリクト競合を解消する) を参照してください。マージをやめたいときは `git merge --abort` で元に戻せます。
+マージをやめたいときは `git merge --abort`（VS Code ではコマンド パレットの「**Git: マージの中止**」（Git: Abort Merge））で元に戻せます。
 
 ### ブランチを削除できない（not fully merged）
 
@@ -271,21 +290,208 @@ detached HEAD の状態でコミットしてしまい、それを残したい場
 git switch -c save-my-work
 ```
 
+## VS Code
+
+VS Code を使っていて困ったときの対処方法です。VS Code の画面の名前は、[第 0 章の 0.8](00-setup.md#08-vs-code-の画面と用語) を参照してください。
+
+### `code` コマンドが見つからない
+
+```text
+bash: code: command not found
+```
+
+macOS の zsh でも、表示は少し違いますが `command not found` と表示されます。
+
+ターミナルが `code` コマンドの場所を知らない状態です。OS ごとに、次の点を確認します（[第 0 章の手順](00-setup.md#ターミナルから-code-コマンドで開けるようにする)・[公式ドキュメント: Command Line Interface](https://code.visualstudio.com/docs/configure/command-line)）。
+
+- **macOS**: VS Code を起動し、コマンド パレット（<kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>）で `shell command` と入力して、「**シェル コマンド: PATH 内に 'code' コマンドをインストールします**」（Shell Command: Install 'code' command in PATH）を実行します。
+- **Windows（WSL2）**: VS Code を Windows 側にインストールし、インストールの途中で **PATH への追加**（Add to PATH）にチェックを入れたか確認します。入れていなかった場合は、インストールし直します。あわせて、VS Code に **WSL** 拡張機能（`ms-vscode-remote.remote-wsl`）が入っていることを確認します。
+- **Linux**: VS Code のインストールが終わっているか確認します。
+
+どの OS でも、設定した後は **ターミナルを一度閉じて開き直す** 必要があります（ターミナルは、開いたときに `PATH` を読み込むためです）。開き直したら、確認します。
+
+```bash
+which code
+code --version
+```
+
+`code` コマンドが使えるようになるまでは、VS Code のメニューの **ファイル**（File）> **フォルダーを開く...**（Open Folder...）でフォルダを開けます。
+
+### `git commit` で VS Code が開いたのに、すぐにコミットが中止される
+
+VS Code にコミットメッセージのタブ（`COMMIT_EDITMSG`）が開くのに、ターミナルにはすぐに次のように表示されて、コミットが作られない場合です。
+
+```text
+Aborting commit due to empty commit message.
+```
+
+Git のエディタの設定に `--wait` が付いていないことが原因です。`--wait` がないと、`code` コマンドは VS Code にファイルを渡してすぐに終わってしまうため、Git は「メッセージが空のまま、エディタが閉じられた」と判断して、コミットを中止します。
+設定を確認します。
+
+```bash
+git config --global core.editor
+```
+
+次のように `--wait` がなければ、これが原因です。
+
+```text
+code
+```
+
+`--wait` を付けて設定し直します。
+
+```bash
+git config --global core.editor "code --wait"
+```
+
+設定し直したら、開いたままの `COMMIT_EDITMSG` のタブは閉じ、もう一度 `git commit` を実行します。
+今度は、ターミナルに `hint: Waiting for your editor to close the file...` と表示されて待つようになります。メッセージを書いて保存し、タブを閉じる（<kbd>Ctrl</kbd> + <kbd>W</kbd>、macOS は <kbd>Command</kbd> + <kbd>W</kbd>）と、コミットが作られます。`#` で始まる行は、メッセージに含まれません。
+
+`gh` コマンドのエディタも同じです。`gh config get editor` で確認し、`code --wait` になっていなければ設定し直します。
+
+```bash
+gh config set editor "code --wait"
+```
+
+VS Code の **ソース管理** ビューのメッセージ欄からコミットする場合は、この設定に関係なくコミットできます。
+
+### ターミナルが PowerShell や cmd になる（WSL2 に接続されていない）
+
+Windows で、統合ターミナルの名前が `powershell` や `cmd` になり、`git` や `bash` のコマンドが思ったとおりに動かない場合です。
+VS Code が WSL2 に接続されず、Windows 側のフォルダとして開いています。
+
+1. VS Code の左下を見て、「**WSL: Ubuntu**」と表示されていなければ、WSL2 に接続されていません。
+2. コマンド パレット（<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>）で「**WSL: Connect to WSL**」を実行します。
+3. 新しいウィンドウが開いたら、**ファイル**（File）> **フォルダーを開く...**（Open Folder...）で、WSL2 の中のフォルダ（`/home/<あなたのユーザー名>/...`）を開きます。
+
+Ubuntu のターミナルで、開きたいフォルダを `code` で開いても構いません。この方法なら、最初から WSL2 に接続された状態で開きます。
+
+```bash
+code ~/git-practice/todo-cli-practice
+```
+
+左下に「**WSL: Ubuntu**」と表示され、ターミナルの名前が `bash` になれば解決です（[第 0 章: 統合ターミナルを開く](00-setup.md#統合ターミナルを開く)・[公式ドキュメント: WSL](https://code.visualstudio.com/docs/remote/wsl)）。
+
+### ソース管理ビューに何も表示されない
+
+**ソース管理**（Source Control）ビューに、変更したファイルやコミットのメッセージ欄が表示されない場合は、次の 3 つのどれかが原因です。ビューに表示されているメッセージで見分けられます（[公式ドキュメント: Source Control](https://code.visualstudio.com/docs/sourcecontrol/overview)）。
+
+#### フォルダを信頼していない（制限モード）
+
+ソース管理ビューに「制限モードで動作する登録済みのソース管理プロバイダーはありません。」と表示される場合は、フォルダが **制限モード**（Restricted Mode）で開いています。
+画面上部の表示の **管理**（Manage）> **信頼する**（Trust）で信頼すると、表示されるようになります（[第 0 章: フォルダを信頼する](00-setup.md#フォルダを信頼する制限モードを解除する)）。
+
+#### リポジトリとは違うフォルダを開いている
+
+VS Code では、**リポジトリのいちばん上のフォルダ**（`.git` があるフォルダ）を開きます。
+
+- **リポジトリの中のフォルダを開いた場合**（例: `todo-cli-practice/tests`）: 「Git リポジトリがワークスペースの親フォルダーまたは開いているファイルで見つかりました。」と表示されます。**リポジトリを開く**（Open Repository）をクリックしても使えますが、`code ~/git-practice/todo-cli-practice` のように、リポジトリのいちばん上のフォルダを開き直すのが確実です。親フォルダーのリポジトリを開くかどうかは、設定の `git.openRepositoryInParentFolders` で変えられます。
+- **リポジトリより上のフォルダを開いた場合**（例: `~/git-practice` やホームディレクトリ）: VS Code は、開いたフォルダのすぐ下のフォルダまでしかリポジトリを探しません。そのため、目的のリポジトリが表示されなかったり、関係のない別のリポジトリが一緒に表示されたりします。リポジトリのいちばん上のフォルダを開き直します。
+
+#### フォルダが Git のリポジトリになっていない
+
+「現在開いているフォルダーには Git リポジトリがありません。」と表示され、**リポジトリを初期化する**（Initialize Repository）のボタンがある場合は、開いているフォルダが Git のリポジトリではありません（`git init` をしていないか、上のように違うフォルダを開いています）。
+
+> [!WARNING]
+> ホームディレクトリなど、リポジトリにするつもりのないフォルダで **リポジトリを初期化する** をクリックしないでください。そのフォルダの中のすべてのファイルが、Git の変更として表示されるようになってしまいます。
+
+どのフォルダがリポジトリなのかは、統合ターミナルで次のコマンドを実行すると確認できます。
+
+```bash
+git rev-parse --show-toplevel
+```
+
+リポジトリの中にいれば、そのリポジトリのいちばん上のフォルダが表示されます。開くのは、このフォルダです。
+
+```text
+/home/hanako/git-practice/todo-cli-practice
+```
+
+リポジトリの外にいる場合は、次のように表示されます。
+
+```text
+fatal: not a git repository (or any of the parent directories): .git
+```
+
+### 改行コードが CRLF になる
+
+ステータス バーの右側に `CRLF` と表示されている場合、そのファイルの改行コードは Windows 形式の `CRLF` です。
+シェルスクリプトが `CRLF` になると、次のようなエラーで動かなくなります（Linux / WSL2 の場合）。
+
+```text
+$ ./todo.sh list
+/usr/bin/env: 'bash\r': No such file or directory
+/usr/bin/env: use -[v]S to pass options in shebang lines
+```
+
+`bash todo.sh` で実行したときは、`$'\r': command not found` のようなエラーになります。
+改行コードは、`file` コマンドでも確認できます。`with CRLF line terminators` と表示されたら `CRLF` です（出力は Ubuntu の場合）。
+
+```text
+$ file todo.sh
+todo.sh: Bourne-Again shell script, Unicode text, UTF-8 text executable, with CRLF line terminators
+```
+
+#### VS Code で操作する
+
+1. ステータス バーの `CRLF` をクリックします。
+2. 「**改行コードの選択**」（Select End of Line Sequence）が表示されるので、`LF` を選びます。
+3. ファイルを保存します（<kbd>Ctrl</kbd> + <kbd>S</kbd>、macOS は <kbd>Command</kbd> + <kbd>S</kbd>）。
+
+ステータス バーの表示が `LF` に変われば解決です。変更をコミットしておきましょう。
+
+#### 設定ファイルで防ぐ
+
+練習用リポジトリには、改行コードを `LF` にそろえるための次のファイルが入っています（[第 5 章](05-issue.md#おすすめの拡張機能をインストールする)）。自分で作るリポジトリにも、同じファイルを置いておくと安心です。
+
+- `.gitattributes` の `* text=auto eol=lf`: Git がファイルを書き出すときに、改行コードを `LF` にします。
+- `.editorconfig` の `end_of_line = lf`: EditorConfig 拡張機能が、保存するときに改行コードを `LF` にします。
+
+Windows では、VS Code が WSL2 に接続されていることも確認してください（[ターミナルが PowerShell や cmd になる](#ターミナルが-powershell-や-cmd-になるwsl2-に接続されていない)）。
+
+### スマート コミットで「常時」を選んでしまった
+
+何もステージしていないときに **コミット** をクリックすると、「ステージされている変更がなく、コミットできません。… すべての変更をステージして、直接コミットしますか?」と確認されます。
+ここで **常時** を選ぶと、それ以降は確認されなくなり、ステージしていない変更もすべて自動でコミットされるようになります（**スマート コミット**、[公式ドキュメント: Staging and committing](https://code.visualstudio.com/docs/sourcecontrol/staging-commits)）。どの変更をコミットに含めるかを自分で選べなくなるので、元に戻しておきましょう。
+
+#### VS Code で操作する
+
+1. 設定（<kbd>Ctrl</kbd> + <kbd>,</kbd>、macOS は <kbd>Command</kbd> + <kbd>,</kbd>）を開きます。
+2. 検索欄に `git.enableSmartCommit` と入力します。
+3. 「ステージされた変更がない場合はすべての変更をコミットします。」のチェックを外します。
+
+#### 設定ファイルで操作する
+
+コマンド パレットで「**基本設定: ユーザー設定を開く (JSON)**」（Preferences: Open User Settings (JSON)）を実行し、`"git.enableSmartCommit": true` の行を削除するか、`false` に書き換えて保存します。
+
+```json
+{
+  "git.enableSmartCommit": false
+}
+```
+
+確認のダイアログで **行わない** を選んだ場合は、`git.suggestSmartCommit` が `false` になり、何もステージしていないときに **コミット** をクリックしても何も起きなくなります。確認を表示したいときは、同じ方法で `git.suggestSmartCommit` にチェックを入れ直します。
+意図しないファイルまでコミットしてしまった場合は、push する前なら、コマンド パレットの「**Git: 前回のコミットを元に戻す**」（Git: Undo Last Commit）で取り消せます（`git reset --soft HEAD~1` と同じです。[直前のコミットを取り消したい（push 前）](#直前のコミットを取り消したいpush-前)）。
+
 ## そのほか
 
 ### エディタ（vim）が開いて抜けられない
 
-`git commit` や `git merge` のときに、見慣れない画面が開いて操作できなくなった場合は、vim が開いています。
+`git commit` や `git merge` のときに、ターミナルの中に見慣れない画面が開いて操作できなくなった場合は、vim が開いています。Git のエディタを設定していないと、vim が使われることがあります。
 
 - 保存して閉じる（メッセージを確定する）: <kbd>Esc</kbd> → `:wq` → <kbd>Enter</kbd>
 - 保存せずに閉じる: <kbd>Esc</kbd> → `:q!` → <kbd>Enter</kbd>
 
-今後は使い慣れたエディタが開くように設定しておきましょう。
+今後は VS Code が開くように設定しておきましょう。
+
+```bash
+git config --global core.editor "code --wait"
+```
+
+VS Code を使えない環境（サーバーに接続したときなど）では、操作が簡単な nano にしておく方法もあります。
 
 ```bash
 git config --global core.editor nano
-# または
-git config --global core.editor "code --wait"
 ```
 
 ### not a git repository と表示される
@@ -312,7 +518,7 @@ warning: in the working copy of 'todo.sh', LF will be replaced by CRLF the next 
 
 改行コードの違い（Linux / macOS は `LF`、Windows は `CRLF`）に関する警告です。WSL2 の中で作業していれば通常は表示されません。
 Windows 側のフォルダで作業している場合は、WSL2 のホームディレクトリ（`~`）で作業し直すのがおすすめです。
-シェルスクリプトの改行コードが `CRLF` になると、`$'\r': command not found` というエラーで動かなくなります。
+シェルスクリプトの改行コードが `CRLF` になると、`$'\r': command not found` というエラーで動かなくなります（[改行コードが CRLF になる](#改行コードが-crlf-になる)）。
 
 ### パスワードや API キーをコミットしてしまった
 
@@ -338,4 +544,4 @@ push する前に気づいた場合は、[直前のコミットを取り消し�
 
 ---
 
-[← 前の章: 開発フローの総合演習](07-github-flow.md) ｜ [目次](../README.md)
+[← 前の章: 開発フローの総合演習](07-github-flow.md) ｜ [目次](../README.md) ｜ [発展編: Claude Code と TDD →](claude-code/README.md)

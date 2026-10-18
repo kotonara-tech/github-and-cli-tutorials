@@ -7,11 +7,17 @@ samples/cli-practice/ip-ranking.txt
 samples/cli-practice/practice/
 
 # エディタや OS が作るファイル
+# （VS Code の設定のうち、みんなで使う推奨拡張機能だけはリポジトリに含める）
 .DS_Store
 *.swp
 *~
-.vscode/
+**/.vscode/*
+!/.vscode/extensions.json
 .idea/
 
 # markdownlint などを手元で実行したときのファイル
 node_modules/
+
+# Claude Code の、自分だけの設定とメモ（発展編。サブディレクトリで起動したときに作られるものも含む）
+**/.claude/settings.local.json
+CLAUDE.local.md

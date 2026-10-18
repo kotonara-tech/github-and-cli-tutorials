@@ -2,6 +2,21 @@
 
 各章の演習と、演習で使うスクリプトの一覧です。演習の本文と解答例は、それぞれの章にあります。
 
+## VS Code で取り組む
+
+演習は、VS Code で行います（準備は [第 0 章](../docs/00-setup.md#07-vs-code-をインストールする) を参照してください）。
+
+1. 演習で使うフォルダを、`code <パス>` で VS Code で開きます。
+
+   ```bash
+   code ~/git-practice/todo-cli-practice
+   ```
+
+2. 初めて開いたフォルダは制限モードで開くので、信頼します（[0.8](../docs/00-setup.md#フォルダを信頼する制限モードを解除する)）。
+3. コマンドは、VS Code の統合ターミナル（メニューの **ターミナル**（Terminal）> **新しいターミナル**（New Terminal））で実行します。開いたフォルダが、最初のカレントディレクトリになります。
+
+Git の操作は、VS Code の画面でもコマンドでもできます。各章の「VS Code で操作する」と「コマンドで操作する」を見比べながら、両方試してみましょう。
+
 ## 演習の一覧
 
 | 章 | 演習 | 使うもの |
@@ -26,6 +41,12 @@
 | [第 7 章](../docs/07-github-flow.md) | 7.2 総合演習: delete コマンドを追加する | 同上 |
 | | 7.3 チャレンジ課題 | 同上 |
 | | 7.4 チームで練習する | 2〜4 人で共有するリポジトリ |
+| [発展編 第 1 章](../docs/claude-code/01-setup.md#演習) | A1-1〜A1-3 Claude Code に質問し、変更を確認して取り消す | `~/git-practice/todo-cli-practice` |
+| [発展編 第 2 章](../docs/claude-code/02-claude-md.md#演習) | A2-1〜A2-3 AGENTS.md と CLAUDE.md を作る | 同上、[samples/claude-harness](../samples/claude-harness/) |
+| [発展編 第 3 章](../docs/claude-code/03-models-and-effort.md#演習) | A3-1〜A3-3 モデルと effort を切り替えて比べる | 同上 |
+| [発展編 第 4 章](../docs/claude-code/04-skills-and-agents.md#演習) | A4-1〜A4-2 TDD 用の skill とテストレビュー用の subagent を作る | 同上 |
+| [発展編 第 5 章](../docs/claude-code/05-harness.md#演習) | A5-1〜A5-3 権限の設定とフックを取り込み、plan モードで作業する | 同上 |
+| [発展編 第 6 章](../docs/claude-code/06-tdd.md) | 追加課題: t-wada 流 TDD で stats コマンドを作る | 同上 |
 
 ## 練習用環境を作るスクリプト
 
@@ -39,9 +60,16 @@ GitHub を使わずに、PC の中だけで「失敗」を安全に体験する�
 ```bash
 cd ~
 bash ~/github-and-cli-tutorials/exercises/scripts/make-conflict-sandbox.sh
-cd ~/conflict-sandbox
+code ~/conflict-sandbox            # 作ったリポジトリを VS Code で開く
+```
+
+開いた VS Code の統合ターミナルで、マージしてコンフリクトを起こします。
+
+```bash
 git merge feature/update-hobby     # コンフリクトが発生する
 ```
+
+コンフリクトは、VS Code の CodeLens やマージ エディターでも、コマンドでも解消できます（[第 4 章](../docs/04-branch.md#45-コンフリクト競合を解消する)）。
 
 | ブランチ | 内容 |
 | --- | --- |
@@ -57,13 +85,21 @@ cd ~
 bash ~/github-and-cli-tutorials/exercises/scripts/make-team-sandbox.sh
 ```
 
+作ったら、Alice さんと Bob さんの作業用リポジトリを、それぞれ別の VS Code のウィンドウで開きます。
+
+```bash
+code ~/team-sandbox/alice
+code ~/team-sandbox/bob
+```
+
 | ディレクトリ | 内容 |
 | --- | --- |
 | `~/team-sandbox/remote.git/` | GitHub の代わりになるリモートリポジトリ（中身は直接触らない） |
 | `~/team-sandbox/alice/` | Alice さんの作業用リポジトリ |
 | `~/team-sandbox/bob/` | Bob さんの作業用リポジトリ |
 
-`alice/` と `bob/` を `cd` で行き来しながら、2 人分の作業をします。それぞれのリポジトリには、コミットの作者として `Alice` / `Bob` が設定されています。
+Alice さんのウィンドウと Bob さんのウィンドウを行き来しながら、2 人分の作業をします（ターミナルだけで進める場合は、`alice/` と `bob/` を `cd` で行き来します）。それぞれのリポジトリには、コミットの作者として `Alice` / `Bob` が設定されています。
+ウィンドウのタイトルや **エクスプローラー** の一番上に表示されるフォルダ名（`alice` / `bob`）で、今どちらの作業をしているかを確かめましょう。
 
 ### 作り直すとき
 

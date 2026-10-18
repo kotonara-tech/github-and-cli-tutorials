@@ -5,8 +5,8 @@
 
 ## この章のゴール
 
-- [ ] Issue に対応するブランチを作り、修正をコミットして push できる
-- [ ] ブラウザと `gh` コマンドの両方で Pull Request を作れる
+- [ ] Issue に対応するブランチを作り、修正をコミットして push できる（VS Code とコマンドの両方で）
+- [ ] ブラウザ・`gh` コマンド・VS Code（GitHub Pull Requests 拡張機能）で Pull Request を作れる
 - [ ] Pull Request と Issue を関連付け、マージ時に Issue を自動で閉じられる
 - [ ] 差分にコメントしてレビューできる。レビューの指摘に対応できる
 - [ ] 自動テスト（CI）の結果を確認できる
@@ -36,7 +36,22 @@ sequenceDiagram
 
 ## 6.2 ブランチを作って修正する
 
+この章の作業は、[第 5 章](05-issue.md#練習用リポジトリを-vs-code-で開く) で VS Code で開いた練習用リポジトリで行います。
+
 ### 作業ブランチを作る
+
+最新の `main` から、Issue 番号を入れた名前のブランチ `fix/1-empty-task` を作ります。
+
+#### VS Code で操作する
+
+1. ステータス バーの左下のブランチ名をクリックし、一覧から `main` を選びます（すでに `main` なら、そのままで構いません）。
+2. **ソース管理**（Source Control）ビューの上部にある **その他の操作...**（More Actions...、「…」のアイコン）> **プル**（Pull）を選び、最新の `main` を取り込みます。
+3. もう一度ステータス バーのブランチ名をクリックし、「**+ 新しいブランチの作成...**」（Create new branch...）を選びます。
+4. `fix/1-empty-task` と入力して <kbd>Enter</kbd> を押します。
+
+ステータス バーの表示が `fix/1-empty-task` に変われば、新しいブランチに切り替わっています（[公式ドキュメント: Branches and Worktrees](https://code.visualstudio.com/docs/sourcecontrol/branches-worktrees)）。
+
+#### コマンドで操作する
 
 ```bash
 cd ~/git-practice/todo-cli-practice
@@ -48,7 +63,12 @@ git switch -c fix/1-empty-task    # Issue 番号を入れたブランチ名に�
 ### まずテストを書く
 
 不具合を直す前に、「正しい動作」を確かめるテストを書いておくと、修正できたかどうかをすぐに確認できます。
-`tests/test_todo.sh` の `# list` の区切り線の直前に、次のテストを追加します。
+VS Code で `tests/test_todo.sh` を開きます。次のどちらの方法でも開けます。
+
+- **クイック オープン**（Quick Open）: <kbd>Ctrl</kbd> + <kbd>P</kbd>（macOS は <kbd>Command</kbd> + <kbd>P</kbd>）を押し、`test_todo` と入力して <kbd>Enter</kbd> を押します。
+- **エクスプローラー**（Explorer）: `tests` フォルダを開き、`test_todo.sh` をクリックします。
+
+`# list` の区切り線の直前に、次のテストを追加します。区切り線は、<kbd>Ctrl</kbd> + <kbd>F</kbd>（macOS は <kbd>Command</kbd> + <kbd>F</kbd>）で `# list` を検索すると見つかります。
 
 ```bash
 reset_todo
@@ -60,11 +80,29 @@ run_todo add "   "
 assert_equal "add に空白だけの内容を渡すと終了コード 1 で終わる" 1 "$STATUS"
 ```
 
-テストを実行すると、追加したテストが失敗する（＝不具合が再現できている）ことを確認できます。
+ShellCheck 拡張機能（[0.9](00-setup.md#09-拡張機能を追加する)）を入れていれば、間違えやすい書き方をすると、その部分に波線が表示されます。マウスを合わせると理由が表示され、パネルの **問題**（Problems）タブにも一覧が表示されます。
+
+テストを実行して、追加したテストが失敗する（＝不具合が再現できている）ことを確認します。テストは、VS Code のタスクでも、統合ターミナルのコマンドでも実行できます。
+
+#### VS Code で操作する
+
+練習用リポジトリの `.vscode/tasks.json` には、テストを実行する **タスク**「テストを実行」が用意されています（[公式ドキュメント: Tasks](https://code.visualstudio.com/docs/debugtest/tasks)）。
+
+1. コマンド パレット（<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>、macOS は <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>）を開き、「**タスク: テスト タスクの実行**」（Tasks: Run Test Task）を選びます。
+   メニューの **ターミナル**（Terminal）> **タスクの実行...**（Run Task...）を選び、一覧から「**テストを実行**」を選んでも同じです。
+2. パネルにタスク用のターミナルが開き、`bash tests/test_todo.sh` を実行した結果が表示されます。
+
+タスク用のターミナルは、何かキーを押すと閉じます。タスクは制限モードでは動かないので、動かないときはフォルダを信頼しているか確認してください。
+
+#### コマンドで操作する
+
+統合ターミナルで、次のコマンドを実行します。
 
 ```bash
 bash tests/test_todo.sh
 ```
+
+どちらの方法でも、次のような結果が表示されます。
 
 ```text
 ...
@@ -77,7 +115,7 @@ FAIL - add に空の内容を渡すと終了コード 1 で終わる
 
 ### 修正する
 
-`todo.sh` の `cmd_add` 関数を修正します。まずは自分で考えてみましょう。
+VS Code で `todo.sh` を開き（クイック オープンで `todo.sh`）、`cmd_add` 関数を修正します。まずは自分で考えてみましょう。
 
 <details>
 <summary>修正例</summary>
@@ -110,11 +148,7 @@ cmd_add() {
 
 </details>
 
-もう一度テストを実行し、すべて成功することを確認します。
-
-```bash
-bash tests/test_todo.sh
-```
+もう一度テストを実行し（「タスク: テスト タスクの実行」、または `bash tests/test_todo.sh`）、すべて成功することを確認します。
 
 ```text
 ...
@@ -122,6 +156,20 @@ bash tests/test_todo.sh
 ```
 
 ### コミットして push する
+
+変更を確認してからコミットし、ブランチを GitHub に push します。
+
+#### VS Code で操作する
+
+1. **ソース管理**（Source Control）ビューを開きます（<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>、macOS は <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>）。
+2. **変更**（Changes）に `todo.sh` と `test_todo.sh` が表示されています。ファイル名をクリックすると、差分エディターで変更前（左）と変更後（右）を見比べられます（`git diff` と同じ内容です）。
+3. それぞれのファイルにマウスを合わせ、**変更をステージ**（Stage Changes、**+** のアイコン）をクリックします。2 つとも **ステージされている変更**（Staged Changes）に移ります。
+4. 上のメッセージ欄に `空の内容のタスクを追加できないようにする` と入力し、**コミット**（Commit）をクリックします。
+5. **Branch の発行**（Publish Branch）をクリックすると、ブランチが GitHub に push されます。
+
+統合ターミナルで `git log --oneline -1` を実行すると、コミットできたことを確かめられます（[公式ドキュメント: Staging and committing](https://code.visualstudio.com/docs/sourcecontrol/staging-commits)）。
+
+#### コマンドで操作する
 
 ```bash
 git status
@@ -142,7 +190,7 @@ remote:
 
 ## 6.3 Pull Request を作る
 
-ブラウザか `gh` コマンドのどちらかで作成します。
+ブラウザ・`gh` コマンド・VS Code（GitHub Pull Requests 拡張機能）のどれかで作成します。
 
 ### 方法 1: ブラウザで作る
 
@@ -165,7 +213,8 @@ remote:
 gh pr create
 ```
 
-対話形式でタイトルや本文を入力できます（本文の入力ではテンプレートを元にエディタが開きます）。
+対話形式でタイトルや本文を入力できます。
+本文の入力では、テンプレートを元にした本文が VS Code のタブで開きます（[0.7](00-setup.md#github-cli-のエディタを-vs-code-にする) で `gh` のエディタを VS Code にしました）。書き終えたら保存し、タブを閉じる（<kbd>Ctrl</kbd> + <kbd>W</kbd>、macOS は <kbd>Command</kbd> + <kbd>W</kbd>）と、ターミナルで続きに進めます。
 オプションで一度に指定することもできます。
 
 ````bash
@@ -221,6 +270,21 @@ gh pr view            # 今のブランチの Pull Request の内容
 gh pr view --web      # ブラウザで開く
 ```
 
+### 方法 3: VS Code（GitHub Pull Requests 拡張機能）で作る
+
+[5.6](05-issue.md#github-にサインインする) で GitHub にサインインしてあれば、VS Code の中で Pull Request を作れます（[公式ドキュメント: Working with GitHub](https://code.visualstudio.com/docs/sourcecontrol/github)）。
+
+1. アクティビティ バーの **GitHub** を選び、**Pull Requests** の見出しにマウスを合わせて、**Create Pull Request** のアイコンをクリックします。
+   コマンド パレットで「**GitHub Pull Requests: Create Pull Request**」を実行しても同じです。
+2. **Create** の画面が開きます。取り込み先（base）が `main`、取り込むブランチ（merge）が `fix/1-empty-task` になっていることを確認します。
+3. **Title** には、コミットメッセージ（`空の内容のタスクを追加できないようにする`）が入っています。
+4. **Description** には、テンプレート（`.github/pull_request_template.md`）の内容が入っています。ブラウザで作るときと同じように記入し、**`Closes #1`** を書きます。
+   テンプレートは GitHub 上の `main` ブランチから読み込まれるため、第 5 章で push したリポジトリなら、そのまま使えます。
+5. 必要なら **Assignees** や **Reviewers** を設定し、**Create** をクリックします。**Create** の横の `∨` から **Create Draft** を選ぶと、ドラフトとして作成できます。
+
+作成すると、Pull Request の内容（**Description** のページ）がエディターのタブで開きます。
+ブランチをまだ push していない場合は、作成するときに push するかどうかを確認されるので、**Publish Branch** をクリックします。
+
 > [!NOTE]
 > Issue と Pull Request は同じ番号の連番を使います。Issue が #1〜#4 まであれば、次に作った Pull Request は #5 になります。
 
@@ -233,12 +297,14 @@ gh pr view --web      # ブラウザで開く
 | **Checks** | 自動テスト（CI）の詳細な結果 |
 | **Files changed** | 変更されたファイルの差分。**レビューはここで行う** |
 
+VS Code では、**GitHub** ビューの **Pull Requests** のセクション（**Created By Me** や **All Open** など）で Pull Request をクリックすると、**Description** のページが開きます。本文・コメント・自動テストの結果・マージボタンが 1 つのページにまとまっています。
+
 ### 自動テスト（CI）を確認する
 
 練習用リポジトリには `.github/workflows/test.yml` があるので、Pull Request を作ると **GitHub Actions** がテストを自動で実行します。
 このように、変更のたびに自動でテストなどを実行する仕組みを **CI（継続的インテグレーション）** と呼びます。
 
-Conversation タブの下部に、結果が表示されます。
+ブラウザでは、Conversation タブの下部に、結果が表示されます。
 
 | 表示 | 意味 |
 | --- | --- |
@@ -246,13 +312,20 @@ Conversation タブの下部に、結果が表示されます。
 | 緑色のチェック ✓ | 成功 |
 | 赤色のバツ ✗ | 失敗。「**Details**」をクリックするとログを確認できる |
 
+CI が失敗したら、ログでどのテストが失敗したかを確認し、手元で修正してコミット・push します。push すると CI が再実行されます。
+
+#### VS Code で操作する
+
+Pull Request の **Description** のページの下部に、`1 successful check`（成功）や `1 failed check`（失敗）のように結果がまとめて表示されます。
+**Show** をクリックすると、チェックごとの結果が表示されます。**Details** をクリックすると、ブラウザでログを確認できます。
+
+#### コマンドで操作する
+
 ターミナルからも確認できます。
 
 ```bash
 gh pr checks
 ```
-
-CI が失敗したら、ログでどのテストが失敗したかを確認し、手元で修正してコミット・push します。push すると CI が再実行されます。
 
 ## 6.5 レビューする
 
@@ -287,6 +360,21 @@ CI が失敗したら、ログでどのテストが失敗したかを確認し�
 
 この中身を書き換えて投稿すると、作成者は「**Commit suggestion**」ボタンを押すだけで、その修正をコミットできます。
 
+### VS Code でレビューする
+
+GitHub Pull Requests 拡張機能を使うと、Pull Request のブランチを手元に取得して動作を確かめながら、VS Code の中でレビューできます（[公式ドキュメント: Working with GitHub](https://code.visualstudio.com/docs/sourcecontrol/github)）。
+
+1. **GitHub** ビューの **Pull Requests** で、レビューする Pull Request をクリックし、**Description** のページを開きます。
+2. **Checkout** をクリックします。Pull Request のブランチが手元に取得され、そのブランチに切り替わります（`gh pr checkout` と同じです）。テスト タスクを実行して、動作を確かめられます。
+3. アクティビティ バーに **GitHub Pull Request** のビューが追加され、**Changes In Pull Request** に変更されたファイルが表示されます。ファイルをクリックすると、差分エディターが開きます。
+4. コメントしたい行の行番号の横にマウスを合わせ、表示される **+** をクリックします。コメントを書き、**Add Comment**（すぐに投稿する）か **Start Review**（まとめて送るレビューを始める）をクリックします。
+5. **Description** のページに戻り、下部の入力欄に全体のコメントを書いて、**Comment** / **Approve** / **Request Changes** のどれかで送信します（ボタンの横の `∨` で切り替えられます）。
+
+自分が作った Pull Request では、ブラウザと同じく **Comment** だけが選べます。
+レビューが終わったら、ステータス バーのブランチ名をクリックして `main` に戻ります。
+
+修正案（suggestion）を送ったり、「**Commit suggestion**」で取り込んだりするのは、ブラウザの **Files changed** タブで行うのが確実です。
+
 ### gh コマンドでレビューする
 
 ```bash
@@ -317,6 +405,14 @@ gh pr review 5 --request-changes --body "空白だけの場合も確認してく
 レビューで修正を求められたら、**同じブランチ** で修正してコミットし、push します。
 Pull Request は自動で更新されるので、新しく作り直す必要はありません。
 
+#### VS Code で操作する
+
+1. ステータス バーのブランチ名が `fix/1-empty-task` になっていることを確認します。
+2. ファイルを修正して保存し、**ソース管理** ビューで変更をステージして、メッセージ（例: `レビューの指摘を反映: エラーメッセージを修正`）を入力して **コミット** をクリックします。
+3. **変更の同期**（Sync Changes）をクリックすると、追加したコミットが push されます。
+
+#### コマンドで操作する
+
 ```bash
 # fix/1-empty-task ブランチにいることを確認してから
 git status
@@ -337,9 +433,25 @@ git push
 
 どれを使うかはチームで決めます。迷ったら **Squash and merge** がおすすめです（1 つの Pull Request が `main` の 1 コミットになり、履歴が分かりやすくなります）。
 
+ブラウザでは、次の手順でマージします。
+
 1. 「**Squash and merge**」を選び、ボタンをクリックします。
 2. コミットメッセージを確認して「**Confirm squash and merge**」をクリックします。
 3. 「**Delete branch**」ボタンが表示されるので、クリックして GitHub 上のブランチを削除します。
+
+どの方法でマージしても、マージ後に Issue #1 を開くと、自動で **Closed** になっていることを確認できます。
+
+### VS Code で操作する
+
+GitHub Pull Requests 拡張機能でもマージできます。
+
+1. Pull Request の **Description** のページを開きます。
+2. 下部の **Merge Pull Request** の右にある一覧（using method）から **Squash and Merge** を選び、**Merge Pull Request** をクリックします。
+3. コミットメッセージの入力欄が表示されるので、内容を確認して **Squash and Merge** をクリックします。
+4. マージが終わると **Delete Branch...** が表示されるので、クリックします。
+5. 何を削除するかを聞かれるので、**Delete All** を選びます。GitHub 上のブランチと手元のブランチが削除され、手元は `main` に切り替わります。
+
+### コマンドで操作する
 
 `gh` コマンドでもマージできます。
 
@@ -347,11 +459,25 @@ git push
 gh pr merge 5 --squash --delete-branch
 ```
 
-マージ後、Issue #1 を開くと、自動で **Closed** になっていることを確認できます。
-
 ## 6.7 マージ後の後片付け
 
 手元のリポジトリを最新の状態にし、不要になったブランチを削除します。
+
+### VS Code で操作する
+
+1. ステータス バーのブランチ名をクリックし、`main` を選びます。
+2. **ソース管理** ビューの **変更の同期**（Sync Changes）をクリックし、マージされた変更を取り込みます。**その他の操作...**（More Actions...、「…」のアイコン）> **プル**（Pull）でも構いません。
+3. コマンド パレットで「**Git: フェッチ (Prune)**」（Git: Fetch (Prune)）を実行し、GitHub で削除されたブランチの情報を手元からも消します。
+4. コマンド パレットで「**Git: ブランチの削除...**」（Git: Delete Branch...）を実行し、`fix/1-empty-task` を選びます。
+
+Squash and merge でマージした場合は、4 で「ブランチ 'fix/1-empty-task' はマージされていません。それでも削除しますか?」と確認されます（理由は下の NOTE を参照）。
+
+> [!WARNING]
+> ここで **ブランチの削除**（Delete Branch）をクリックすると、`git branch -D` と同じく強制的に削除されます。GitHub で Pull Request がマージ済み（**Merged**）になっていることを確認してから削除してください。
+
+6.6 の VS Code の手順で **Delete All** を選んだ場合は、手元のブランチの削除と `main` への切り替えまで済んでいるので、2 だけを行います。
+
+### コマンドで操作する
 
 ```bash
 git switch main
@@ -378,6 +504,7 @@ git branch -d fix/1-empty-task    # 手元のブランチを削除する
 ### 演習 6-1: バグを修正する Pull Request を作る
 
 本文の手順に沿って、Issue #1（空の内容でタスクを追加できてしまう）を修正する Pull Request を作り、マージしてください。
+ブランチの作成・コミット・push・Pull Request の作成とマージは、VS Code とコマンドのどちらで行っても構いません。慣れてきたら、もう一方の方法も試してみましょう。
 
 - [ ] `fix/1-empty-task` ブランチを作った
 - [ ] テストを追加し、修正前は失敗することを確認した
@@ -390,7 +517,7 @@ git branch -d fix/1-empty-task    # 手元のブランチを削除する
 
 ### 演習 6-2: セルフレビューと指摘への対応
 
-1. 新しく `docs/update-usage` ブランチを作り、`README.md` の「使い方」に `./todo.sh version` の説明を追加して Pull Request を作ってください。
+1. 新しく `docs/update-usage` ブランチを作り、`README.md` の「使い方」に `./todo.sh version` の説明を追加して Pull Request を作ってください（VS Code で `README.md` を開いて編集し、<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>（macOS は <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>）のプレビューで表示を確かめましょう）。
 2. Files changed タブで、追加した行に suggestion（修正案）付きのコメントを書き、「Comment」としてレビューを送信してください。
 3. 「Commit suggestion」で修正案をコミットしてください。
 4. コメントに返信して「Resolve conversation」を押してから、マージしてください。
@@ -398,7 +525,7 @@ git branch -d fix/1-empty-task    # 手元のブランチを削除する
 ### 演習 6-3: CI の失敗を体験する
 
 1. 新しくブランチを作り、`todo.sh` の `VERSION` を `"1.0.1"` に変更して、Pull Request を作ってください。
-2. CI が **失敗** することを確認し、「Details」からログを読んで原因を特定してください。
+2. CI が **失敗** することを確認し、「Details」からログを読んで原因を特定してください（ブラウザの Pull Request の画面、VS Code の **Description** のページ、`gh pr checks` のどれでも確認できます）。
 3. テストを修正して push し、CI が成功することを確認してからマージしてください。
 
 <details>
@@ -406,6 +533,11 @@ git branch -d fix/1-empty-task    # 手元のブランチを削除する
 
 `tests/test_todo.sh` に、バージョンの表示を確認するテスト（`"todo.sh 1.0.0"` を期待しているテスト）があります。
 仕様を変更したら、それに合わせてテストも更新する必要があります。
+
+VS Code では、`main` を最新にしてから「**+ 新しいブランチの作成...**」で `chore/bump-version` を作り、`todo.sh` の `VERSION` を書き換えて **ソース管理** ビューからコミットし、**Branch の発行** → **Create Pull Request** の順に進めます。
+テストを直したら、テスト タスクで成功を確認してからコミットし、**変更の同期** で push します。
+
+コマンドで行う場合は、次のとおりです。
 
 ```bash
 git switch main && git pull
@@ -428,7 +560,7 @@ gh pr checks                      # 成功を確認
 ## まとめ
 
 - Pull Request は「変更を取り込む前に、レビューと自動テストを行う」ための仕組み
-- 「Issue → ブランチ → コミット → push → Pull Request → レビュー・CI → マージ → 後片付け」が基本の流れ
+- 「Issue → ブランチ → コミット → push → Pull Request → レビュー・CI → マージ → 後片付け」が基本の流れ。ブラウザ・`gh` コマンド・VS Code のどれでも進められる
 - 本文に `Closes #番号` と書くと、マージ時に Issue が自動で閉じる
 - 指摘への対応は、同じブランチに追加で push する
 - 小さく、説明付きで、自分で見直してからレビューを依頼する

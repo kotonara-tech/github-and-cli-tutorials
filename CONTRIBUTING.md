@@ -60,12 +60,17 @@ npx --yes markdownlint-cli2@0.18.1
 # シェルスクリプトのチェック（shellcheck が必要）
 git ls-files -z '*.sh' | xargs -0 shellcheck
 
-# サンプルと練習用スクリプトのテスト
+# サンプルと練習用スクリプトのテスト（test_hooks.sh には shellcheck と jq が必要）
 bash samples/todo-cli/tests/test_todo.sh
 bash exercises/scripts/tests/test_sandboxes.sh
+bash samples/claude-harness/tests/test_hooks.sh
+
+# JSON ファイル（Claude Code と VS Code の設定）の書式チェック
+git ls-files -z '*.json' |
+  xargs -0 -r -n 1 sh -c 'python3 -m json.tool "$1" >/dev/null || { echo "JSON の書式が正しくありません: $1"; exit 1; }' sh
 ```
 
-`shellcheck` は、macOS なら `brew install shellcheck`、Ubuntu なら `sudo apt install shellcheck` でインストールできます。
+`shellcheck` と `jq` は、macOS なら `brew install shellcheck jq`、Ubuntu なら `sudo apt install shellcheck jq` でインストールできます。
 
 ### 4. Pull Request を作る
 
@@ -141,6 +146,55 @@ gh pr create
 
 - ボタンやメニューは、英語表示での名前を **太字** で書きます（例: 「**New repository**」）。
 - GitHub の画面は頻繁に変わるため、スクリーンショットよりも「どのタブの、どのボタンか」を文章で説明することを優先します。
+
+### VS Code の画面の説明
+
+- この教材は、VS Code に日本語化の拡張機能（Japanese Language Pack）を入れていることを前提にします。
+- ボタンやメニューは **日本語表示での名前を太字** で書き、初めて出てくるときは英語表示の名前を（）で添えます（例: 「**ソース管理**（Source Control）」「**変更の同期**（Sync Changes）」）。
+  日本語化の拡張機能は VS Code 本体より更新が遅れることがあり、新しい機能は英語のまま表示されることがあるためです。
+- GitHub Pull Requests 拡張機能のように日本語化されていない画面は、英語の名前だけを書きます。
+- 日本語の名前は、VS Code の公式の翻訳（[microsoft/vscode-loc](https://github.com/microsoft/vscode-loc)）と照らし合わせて確認します。
+- 用語は公式の翻訳に合わせます（例: 「コマンド パレット」「ステータス バー」）。
+- VS Code の機能を説明するときは、[公式ドキュメント](https://code.visualstudio.com/docs) へのリンクを添えます。
+- VS Code は毎週更新されるため、本文にバージョン番号は書きません。
+
+### キー操作の書き方
+
+- キーは `<kbd>` で囲み、同時に押すキーは ` + ` でつなぎます（例: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>）。
+- OS によって違う場合は、Windows / Linux を先に書き、macOS を（）で添えます（例: <kbd>Ctrl</kbd> + <kbd>S</kbd>（macOS は <kbd>Command</kbd> + <kbd>S</kbd>））。
+- バッククォートのキーは `<kbd>&#96;</kbd>` と書きます（`` ` `` をそのまま書くと、コードの表記と解釈されて表示が崩れることがあります）。
+
+### VS Code とコマンドの両方で説明する
+
+Git の操作は、VS Code の画面での操作とコマンドでの操作を **同じ比重で** 説明します。
+既存の節の中に、次の 2 つの小見出しを、その節の 1 つ下のレベルで並べます（見出しの番号は変えません）。
+
+````markdown
+## 2.5 コミットする（git commit）
+
+（その操作が何をするのかの説明）
+
+### VS Code で操作する
+
+1. **ソース管理**（Source Control）ビューを開きます。
+2. ...
+
+### コマンドで操作する
+
+```bash
+git commit -m "..."
+```
+````
+
+- 両方の手順で、同じ結果になることを確認します。画面での操作の結果は、コマンド（`git status` や `git log`）で確かめる方法も添えると理解が深まります。
+- 演習の解答例も、両方の方法を示します。
+
+### Claude Code の説明（発展編）
+
+- Claude Code は頻繁に更新されるため、各章の冒頭に「何年何月時点の情報か」を書き、機能ごとに [公式ドキュメント](https://code.claude.com/docs/ja/overview) へのリンクを添えます。日本語版のページがあれば、日本語版にリンクします。
+- コマンド名、設定の項目名、ファイルの置き場所は、公式ドキュメントで確認してから書きます。確認できないことは書きません。
+- Claude の返答は実行するたびに変わるため、出力例には「例」であることを明記します。テストの結果などのコマンドの出力は、実際に実行して確認します。
+- `samples/claude-harness/template/` の skill・subagent・設定を変更したら、スクラッチの練習用リポジトリにコピーして、実際の Claude Code で動くことを確認します。
 
 ### サンプルコード・スクリプト
 

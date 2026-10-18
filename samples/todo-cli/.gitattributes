@@ -1,0 +1,5 @@
+# テキストファイル（シェルスクリプトを含む）の改行コードを LF にそろえる
+# （Windows で CRLF になると、シェルスクリプトが動かなくなるため）
+* text=auto eol=lf
+# .sh は text を明示する。text=auto だけでは、すでに CRLF でコミットされたファイルが LF に直らないため
+*.sh text eol=lf
